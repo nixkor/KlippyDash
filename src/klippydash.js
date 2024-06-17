@@ -172,6 +172,8 @@ function processStatus(printer, index) {
 					divPrintStats.find(".eta-time").text(endTime.toLocaleString());
 				}
 				divPrintStats.find(".printing-container").removeClass("hidden");
+				$(`#tile${index}>.title-container`).find(".e-stop").removeClass("hidden");
+				
 			}
 			else if(po.display_status.progress > 0) { //complete
 				divPrintStats.find(".printing-container").addClass("hidden");
@@ -186,6 +188,7 @@ function processStatus(printer, index) {
 	}
 	else {
 		divPrintStats.addClass("hidden");
+		$(`#tile${index}>.title-container`).find(".e-stop").addClass("hidden");
 	}
 		
 	//errors
@@ -328,7 +331,13 @@ function updateAll() {
 }
 
 function setProgressBar(index, percent, state, message = undefined) {
-	var statusDict = {"success":{"status":"success"}, "warning": {"status":"warning"}, "error": {"status":"error"}, "party-time": {"status":"party-time"}}; //trying to implement some form of typing status to remove unwanted classes - may be a better way
+	var statusDict = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
+		"success":{"status":"success"}, 
+		"warning": {"status":"warning"}, 
+		"error": {"status":"error"}, 
+		"party-time": {"status":"party-time"}, 
+		"standby": {"status":"standby"}
+	};
 	var bonusClass = undefined;
 	
 	switch(state) {
@@ -351,6 +360,7 @@ function setProgressBar(index, percent, state, message = undefined) {
 			break;
 		case "standby":
 			message = "Standby";
+			bonusClass = statusDict["standby"].status;
 			percent = 1;
 			break;
 		case "cancelled":
@@ -406,18 +416,15 @@ function createTiles() {
 					.attr("class","title-container")
 					.append($("<div>") //title
 						.attr("class", "title")
-						.append(`${val.name}`)
+						.html(`${val.name}`)
 					)
 					.append($("<div>")
-						.attr("class","stop-sign-wrap hidden")
+						.attr("class","e-stop-wrap")
 						.append($("<div>")
-							.attr("class","stop-sign")
-							.append($("<span>")
-								.attr("class","stop-sign-text")
-								.text("!")	
-							)
+							.attr("class","e-stop hidden")
+							.html(_octagonEmojiHtmlCode)
 						)
-					)	
+					)
 				)
 				.append($("<div>") //camera 
 					.attr("class","cam")
@@ -426,6 +433,7 @@ function createTiles() {
 						.append($("<img>")
 							.attr("class","cam")
 							.attr("id","cam" + index)
+							.attr("width","800")
 							.attr("data",JSON.stringify(data))
 						)
 					)
@@ -567,6 +575,8 @@ function setup() {
 	
 	var timer = setInterval(function() { updateAll(); }, 1000);	
 }
+
+const _octagonEmojiHtmlCode = "&#128721;";
 
 $().ready(function(){	
 	setup();	

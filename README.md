@@ -11,3 +11,4 @@ Lightweight Klipper Dashboard using Mainsail API
   * e stop!
   * restart firmware / klipper
   * home / preheat
+* update to websockets

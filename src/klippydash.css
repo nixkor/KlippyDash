@@ -19,6 +19,8 @@ https://github.com/nixkor/KlippyDash
 	--warning-progress-text-color: black;
 	--error-progress-bar-color: #D61B1B;
 	--error-progress-text-color: white;
+	--standby-progress-bar-color: #505050;
+	--standby-progress-text-color: white;	
 	
 	--lighten-overlay-color: rgba(255,255,255,0.2);
 	--darken-overlay-color: rgba(0, 0, 0, 0.2);
@@ -194,6 +196,22 @@ div.error {
 	color: var(--error-progress-text-color) !important;
 }
 
+.progress-bar-progress.standby {
+	background-color: var(--standby-progress-bar-color);
+	/*background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,0), rgba(0,0,0,.5));*/
+	/*animation: pulse 5s linear infinite;*/
+}
+
+@keyframes pulse {
+	0%{background-color:rgba(0, 0, 0, .5)}
+	50%{background-color:rgba(0, 0, 0, 0)}
+	100%{background-color:rgba(0, 0, 0, .5)}
+}
+
+.progress-bar-progress.standby>.progress-bar-text {
+	color: var(--standby-progress-text-color) !important;
+}
+
 .progress-bar-progress.party-time {
 	background-image: linear-gradient(to right, red,orange,yellow,green,blue,indigo,violet,red,red);
 	background-size: 1000% 1000%;
@@ -206,7 +224,7 @@ div.error {
 }
 
 .progress-bar-progress.party-time>.progress-bar-text {
-	color: var(--error-progress-text-color) !important;
+	color: white;
 }
 
 .tile-line {
@@ -239,55 +257,32 @@ div.error {
     text-align: left;
 }
 
-
-/* stop sign */
-.stop-sign-wrap {
-    width: 40px;
-    height: 40px;
-    float: right;
-    position: relative;
-    overflow: hidden;
-    margin-right: 10px;
-}
-.stop-sign {
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    overflow: hidden;
-    transform: rotate(45deg);
-    background: darkred;
-    border: 4px solid lightgray;
-    cursor:pointer;
-}
-.stop-sign-text {
-    position:absolute;
-    color: white;
-    transform:rotate(-45deg);
-    top: 0; right: 0; bottom:0; left:0;
-    font-weight:800;
-    font-size: 22px;
-}
-.stop-sign:hover {
-    background:red;
-    border-color:white;
-}
-.stop-sign:before {
-    position: absolute;
-    top: -4px; right: -4px; bottom: -4px; left: -4px; /*  = negative border width */
-    transform: rotate(45deg);
-    content: '';
-    border: inherit;
-}
-
 .title-container {
   align-content:center;
 }
 
+.e-stop-wrap {
+	position: relative;
+    overflow: hidden;
+	align-content:center;
+	float:right;
+}
+
 .e-stop {
-  float: right;
+	/*float: right;*/
+	cursor:pointer;
+	font-size:2em;
+	align-content:center;
+	padding:0;
+	margin:0;
+}
+
+.e-stop:hover {
+	background-color:white;
 }
 
 .title {
-  float:left;
+  	float:left;
 }
 
 .footer	 {
@@ -297,3 +292,4 @@ div.error {
 	width: 100%;
 	font-size: .8em;
 }
+
