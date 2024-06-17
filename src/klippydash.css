@@ -25,6 +25,8 @@ https://github.com/nixkor/KlippyDash
 }
 
 body {
+	position:relative;
+	padding-bottom:30px;
 	font-family: arial;
 	font-size: 12pt;
 	background-color: var(--bg-color); 
@@ -91,7 +93,7 @@ div.error {
   background-color: var(--tile-bg-color);
   color: var(--text-color);
   border-radius: var(--tile-border-radius);
-  border: var(--tile-border)
+  border: var(--tile-border);
 }
 
 .title {
@@ -286,4 +288,12 @@ div.error {
 
 .title {
   float:left;
+}
+
+.footer	 {
+	position: absolute;
+	bottom: 0px;
+	height: 20px;
+	width: 100%;
+	font-size: .8em;
 }

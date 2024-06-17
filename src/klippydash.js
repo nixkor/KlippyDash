@@ -351,7 +351,7 @@ function setProgressBar(index, percent, state, message = undefined) {
 			break;
 		case "standby":
 			message = "Standby";
-			percent = 0;
+			percent = 1;
 			break;
 		case "cancelled":
 			message = "Cancelled";
@@ -540,6 +540,8 @@ function createTiles() {
 				)
 			)
 	});
+
+	canvas.append($("<div>").attr("class","footer").text("KlippyDash - a lightweight Klipper dashboard."));
 }
 
 function setup() {
