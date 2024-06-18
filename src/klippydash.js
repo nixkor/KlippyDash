@@ -19,9 +19,9 @@ String.prototype.format = String.prototype.f = function() {
 };
 
 function getPrinterObjects(printer, index) {
-		var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
+	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
 
-		$.ajax({
+	$.ajax({
 		url: printer.host + endpoint,
 		type: 'GET',
 		contentType: 'application/json',
@@ -99,6 +99,8 @@ function processStatus(printer, index) {
 	$(`#tile${index}>.section-time`).text(Date().toString());
 
 	clearErrors(index);
+
+	$(`#tile${index}>.title-container`).find(".e-stop").addClass("hidden");
 	
 	//check connections and show warnings / errors
 	if(!si.klippy_connected) {
@@ -181,6 +183,7 @@ function processStatus(printer, index) {
 			else {
 				divPrintStats.find(".remaining-time").html("<span class='dynamic-value'>Calculating...</span>");
 				divPrintStats.find(".eta-time").text("Calculating...");
+				$(`#tile${index}>.title-container`).find(".e-stop").removeClass("hidden");
 				divPrintStats.find(".printing-container").removeClass("hidden");
 			}
 			
@@ -294,15 +297,21 @@ function showExtruder(index, enabled) {
 
 function clearErrors(index) {
 	var div = $(`#tile${index}>.section-error`);
-		div.addClass("hidden");
+	div.addClass("hidden");
+
+	//only remove body alert if all errors are silenced.
+	if($(".tile>.section-error").not(".hidden").length == 0 ) {
+		$("body").removeClass("alert");
+	}
 }
 
 function showError(index, message) {
 	var div = $(`#tile${index}>.section-error`);
 
-		div.html(message);
-		div.removeClass("hidden");
+	div.html(message);
+	div.removeClass("hidden");
 
+	$("body").addClass("alert");
 }
 
 function updatePrinterInfo(printer,index) {
@@ -336,13 +345,15 @@ function setProgressBar(index, percent, state, message = undefined) {
 		"warning": {"status":"warning"}, 
 		"error": {"status":"error"}, 
 		"party-time": {"status":"party-time"}, 
-		"standby": {"status":"standby"}
+		"standby": {"status":"standby"},
+		"printing":{"status":"printing"}
 	};
 	var bonusClass = undefined;
 	
 	switch(state) {
 		case "printing":
 			if (typeof(message) == "undefined") message = `Printing - ${percent.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, maximumFractionDigits:0})}`;	
+			bonusClass = statusDict["printing"].status;
 			break;
 		case "complete":
 			if (typeof(message) == "undefined") message = "Complete";
@@ -405,7 +416,7 @@ function createTiles() {
 	var canvas = $("#klippydash");
 
 	printers.forEach(function(val, index, arr) {
-		var data = {"host": val.host}; 
+		var data = {"index": index}; 
 	
 		//build the tiles
 		canvas
@@ -419,10 +430,11 @@ function createTiles() {
 						.html(`${val.name}`)
 					)
 					.append($("<div>")
-						.attr("class","e-stop-wrap")
+						.attr("class","e-stop-wrap") //keep estop hidden until complete.
 						.append($("<div>")
 							.attr("class","e-stop hidden")
-							.html(_octagonEmojiHtmlCode)
+							.attr("data",JSON.stringify(data))
+							.html(_htmlCode["octagon"])
 						)
 					)
 				)
@@ -522,7 +534,7 @@ function createTiles() {
 						.attr("id","extruder-target")
 						.attr("class","extruder-target dynamic-value")
 					)
-					.append($("<sup>").append("&#8451;"))
+					.append($("<sup>").html(_htmlCode["celsius"]))
 				)
 				.append($("<div>")
 					.attr("id","bed" + index)
@@ -537,11 +549,11 @@ function createTiles() {
 						.attr("id","bed-target")
 						.attr("class","bed-target dynamic-value")
 					)
-					.append($("<sup>").append("&#8451;"))
+					.append($("<sup>").html(_htmlCode["celsius"]))
 				)		
 				.append($("<div>") //error
 						.attr("id","error" + index)
-						.attr("class","section-error error hidden")
+						.attr("class","section-error hidden")
 				)				
 				.append($("<div>").attr("id","time" + index)
 					.attr("class","section-time tiny" )
@@ -560,29 +572,48 @@ function setup() {
 	//set inital to snapshot
 	$("img.cam").each(function() {
 		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", data.host + "/webcam/?action=snapshot&cache=" + Math.random());
+		$(this).attr("src", printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
 	
 	//set hover to stream
 	$("img.cam").hover(function(e) {
 		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", data.host + "/webcam/?action=stream");
+		$(this).attr("src", printers[data.index].host + "/webcam/?action=stream");
 	},
 	function(e) {
 		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", data.host + "/webcam/?action=snapshot&cache=" + Math.random());
+		$(this).attr("src", printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
 	
 	var timer = setInterval(function() { updateAll(); }, 1000);	
 }
 
-const _octagonEmojiHtmlCode = "&#128721;";
+$(".e-stop").click(function(e) {
+	if(confirm("Are you sure you want to stop?")) {
+		var data = JSON.parse($(this).attr("data"));
+		var endpoint = "/printer/emergency_stop";
+		var printer = printers[data.index];
+		$.ajax({
+			url: printer.host + endpoint,
+			type: 'POST',
+			contentType: 'application/json',
+			timeout: _ajaxTimeout,
+			success: function(data) { 
+				alert("success!");
+			},
+			error: function(err) { 
+				alert(`failure! ${err}`);
+			}
+		});
+	}
+})
+
+const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
+	"celsius":"&#8451;", 
+	"octagon":"&#128721;", 
+};
 
 $().ready(function(){	
 	setup();	
 	updateAll();	
-
-	$(".e-stop").click(function() {
-		alert("EMERGENCY STOP!"); //TODO: code this
-	})
 });
