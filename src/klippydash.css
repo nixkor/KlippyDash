@@ -35,6 +35,11 @@ body {
 	color: var(--text-color);
 }
 
+body.alert {
+	animation: alarm-gradient 5s linear infinite;
+	background-color: red;;
+}
+
 img.cam {
 	width:800;
 }
@@ -59,21 +64,15 @@ div.stats {
 
 .section-error {
 	white-space: pre;
-	margin: 1em 0;
+	font-family:monospace;
+	margin: 1em 0 1em;
 	padding: 5px;
-}
-
-div.error {
-	margin-top: 10px;
 	text-align: left;
 	vertical-align: top;
-	margin-bottom: 10px;
-}
-
-.error {
-	background-color: #ff6666 !important;
-	color: black !important;
-	font-weight: bold;
+	background-color: #111 !important;
+	color: red !important;
+	font-weight: bold;	
+	border: var(--tile-border);
 }
 
 .hidden {
@@ -161,7 +160,7 @@ div.error {
 /* success */
 .progress-bar-progress.success {
 	/*background-color: var(--success-progress-bar-color) !important;*/
-	background-image: linear-gradient(to right, #46df38,#04690c);
+	background-image: linear-gradient(to left, #46df38,#04690c);
 }
 
 .progress-bar-progress.success>.progress-bar-text {
@@ -196,16 +195,54 @@ div.error {
 	color: var(--error-progress-text-color) !important;
 }
 
+
+/* success */
+.progress-bar-progress.printing {
+		/*background-size: 800px 800px;*/
+		background-color: silver;
+		background-image: linear-gradient(to right, hsla(219, 100%, 64%, 1), hwb(187 27% 0% / 1));
+}
+
+.progress-bar-progress.printing>.progress-bar-text {
+	color: var(--success-progress-text-color) !important;
+}
+
+
 .progress-bar-progress.standby {
-	background-color: var(--standby-progress-bar-color);
+	/*background-color: var(--standby-progress-bar-color);*/
 	/*background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,0), rgba(0,0,0,.5));*/
-	/*animation: pulse 5s linear infinite;*/
+	animation: pulse 5s linear infinite;
+	/*animation: rainbow-road 5s linear infinite;*/
+}
+
+@keyframes rainbow-road {
+	0%{background-color: hsl(0 100 50)}
+	5%{background-color: hsl(18 100 50)}
+	10%{background-color: hsl(36 100 50)}
+	15%{background-color: hsl(54 100 50)}
+	20%{background-color: hsl(72 100 50)}
+	25%{background-color: hsl(96 100 50)}
+	30%{background-color: hsl(108 100 50)}
+	35%{background-color: hsl(126 100 50)}
+	40%{background-color: hsl(144 100 50)}
+	45%{background-color: hsl(162 100 50)}
+	50%{background-color: hsl(180 100 50)}
+	55%{background-color: hsl(198 100 50)}
+	60%{background-color: hsl(216 100 50)}
+	65%{background-color: hsl(234 100 50)}
+	70%{background-color: hsl(252 100 50)}
+	75%{background-color: hsl(270 100 50)}
+	80%{background-color: hsl(288 100 50)}
+	85%{background-color: hsl(306 100 50)}
+	90%{background-color: hsl(324 100 50)}
+	95%{background-color: hsl(342 100 50)}
+	100%{background-color: hsl(360 100 50)}
 }
 
 @keyframes pulse {
-	0%{background-color:rgba(0, 0, 0, .5)}
-	50%{background-color:rgba(0, 0, 0, 0)}
-	100%{background-color:rgba(0, 0, 0, .5)}
+	0%{background-color:rgba(64, 64, 64, 1)}
+	50%{background-color:rgba(128, 128, 128, 1)}
+	100%{background-color:rgba(64, 64, 64, 1)}
 }
 
 .progress-bar-progress.standby>.progress-bar-text {
