@@ -1,2 +1,2 @@
 # KlippyDash
-Lightweight Klipper Dashboard using Mainsail API
+Lightweight Klipper Dashboard using Moonraker API
