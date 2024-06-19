@@ -100,7 +100,11 @@ function processStatus(printer, index) {
 
 	clearErrors(index);
 
-	$(`#tile${index}>.title-container`).find(".e-stop").addClass("hidden");
+	$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
+	$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
+	$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
+	$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
+	$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");
 	
 	//check connections and show warnings / errors
 	if(!si.klippy_connected) {
@@ -145,7 +149,7 @@ function processStatus(printer, index) {
 	
 	//filename
 	var divFile = $(`#tile${index}>.section-file`);
-	if(po.print_stats.state == "printing" || po.print_stats.state == "paused" || po.print_stats.state =="complete") {
+	if(po.print_stats.state == "printing" || po.print_stats.state == "paused" || po.print_stats.state =="complete" || po.print_stats.state == "cancelled") {
 		divFile.find(".filename").text(po.print_stats.filename);
 		divFile.removeClass("hidden");
 	}
@@ -160,7 +164,7 @@ function processStatus(printer, index) {
 			divPrintStats.find(".print-time").html(formatTime(po.print_stats.print_duration));
 			divPrintStats.find(".filament-used").text((po.print_stats.filament_used/1000).toFixed(2));	
 			
-			if(po.display_status.progress > 0 && po.print_stats.state != "complete") { //printing
+			if(po.display_status.progress > 0 && po.print_stats.state != "complete") { //printing or paused
 				var estimatedTotalTime = (po.print_stats.print_duration / po.display_status.progress);
 				var remainingTime = estimatedTotalTime - po.print_stats.print_duration;
 				divPrintStats.find(".remaining-time").html(formatTime(remainingTime));
@@ -174,24 +178,58 @@ function processStatus(printer, index) {
 					divPrintStats.find(".eta-time").text(endTime.toLocaleString());
 				}
 				divPrintStats.find(".printing-container").removeClass("hidden");
-				$(`#tile${index}>.title-container`).find(".e-stop").removeClass("hidden");
+				if(po.print_stats.state == "printing") { //printing
+					$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
+					$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
+					$(`#tile${index}>.title-container>.control-wrap>.control-pause`).removeClass("hidden");
+				}
+				else { //paused
+					$(`#tile${index}>.title-container>.control-wrap>.control-resume`).removeClass("hidden");
+					$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
+					$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).removeClass("hidden");
+				}
+				//$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).removeClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).removeClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");	
 				
 			}
 			else if(po.display_status.progress > 0) { //complete
 				divPrintStats.find(".printing-container").addClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");		
 			}
-			else {
+			else{ //starting up
 				divPrintStats.find(".remaining-time").html("<span class='dynamic-value'>Calculating...</span>");
 				divPrintStats.find(".eta-time").text("Calculating...");
-				$(`#tile${index}>.title-container`).find(".e-stop").removeClass("hidden");
+
 				divPrintStats.find(".printing-container").removeClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-pause`).removeClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).removeClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).removeClass("hidden");
+				$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");
+				
 			}
 			
 			divPrintStats.removeClass("hidden");
 	}
-	else {
+	else if(po.print_stats.state == "cancelled") { //cancelled
+		$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-clear`).removeClass("hidden");			
+	}
+	else { //idle
 		divPrintStats.addClass("hidden");
-		$(`#tile${index}>.title-container`).find(".e-stop").addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");		
+		$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
+		$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");
 	}
 		
 	//errors
@@ -423,6 +461,7 @@ function createTiles() {
 			.append($("<div>")//tile
 				.attr("class","tile")
 				.attr("id","tile" + index)
+				.attr("data",JSON.stringify(data))
 				.append($("<div>") 
 					.attr("class","title-container")
 					.append($("<div>") //title
@@ -430,9 +469,30 @@ function createTiles() {
 						.html(`${val.name}`)
 					)
 					.append($("<div>")
-						.attr("class","e-stop-wrap") //keep estop hidden until complete.
-						.append($("<div>")
-							.attr("class","e-stop hidden")
+						.attr("class","control-wrap") 
+						.append($("<span>")
+							.attr("class","control-resume hidden")
+							
+							.attr("data",JSON.stringify(data))
+							.html(_htmlCode["play"])
+						)
+						.append($("<span>")
+							.attr("class","control-pause hidden")
+							.attr("data",JSON.stringify(data))
+							.html(_htmlCode["pause"])
+						)						
+						.append($("<span>")
+							.attr("class","control-cancel hidden")
+							.attr("data",JSON.stringify(data))
+							.html(_htmlCode["stop"])
+						)
+						.append($("<span>")
+							.attr("class","control-clear hidden")
+							.attr("data",JSON.stringify(data))
+							.html(_htmlCode["refresh"])
+						)																		
+						.append($("<span>")
+							.attr("class","control-e-stop hidden")
 							.attr("data",JSON.stringify(data))
 							.html(_htmlCode["octagon"])
 						)
@@ -556,7 +616,114 @@ function setup() {
 	printers = settings.printers;
 
 	createTiles();
+
+	//bind jquery handlers
+	$(".control-e-stop").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = printers[data.index];
+
+		if(confirm(`Are you sure you want to emergency stop?\n\nPrinter: ${printer.name}`)) {
+			var endpoint = "/printer/emergency_stop";
+			$.ajax({
+				url: printer.host + endpoint,
+				type: 'POST',
+				contentType: 'application/json',
+				timeout: _ajaxTimeout,
+				success: function(data) { 
+					alert("E-STOP Successful!");
+				},
+				error: function(err) { 
+					alert(`failure! ${err}`);
+				}
+			});
+		}
+	});
+
+	$(".control-pause").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = printers[data.index];
+
+		if(confirm(`Are you sure you want to pause?\n\nPrinter: ${printer.name}`)) {
+			var endpoint = "/printer/print/pause";
+
+			$.ajax({
+				url: printer.host + endpoint,
+				type: 'POST',
+				contentType: 'application/json',
+				timeout: _ajaxTimeout,
+				success: function(data) { 
+					alert("Job Paused!");
+				},
+				error: function(err) { 
+					alert(`failure! ${err}`);
+				}
+			});
+		}
+	});
+
+	$(".control-resume").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = printers[data.index];
+
+		if(confirm(`Are you sure you want to resume?\n\nPrinter: ${printer.name}`)) {
+			var endpoint = "/printer/print/resume";
+			$.ajax({
+				url: printer.host + endpoint,
+				type: 'POST',
+				contentType: 'application/json',
+				timeout: _ajaxTimeout,
+				success: function(data) { 
+					alert("Job Resumed!");
+				},
+				error: function(err) { 
+					alert(`failure! ${err}`);
+				}
+			});
+		}
+	});
 	
+	$(".control-cancel").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = printers[data.index];
+
+		if(confirm(`Are you sure you want to cancel?\n\nPrinter: ${printer.name}`)) {
+			var endpoint = "/printer/print/cancel";
+			$.ajax({
+				url: printer.host + endpoint,
+				type: 'POST',
+				contentType: 'application/json',
+				timeout: _ajaxTimeout,
+				success: function(data) { 
+					alert("Job Cancelled!");
+				},
+				error: function(err) { 
+					alert(`failure! ${err}`);
+				}
+			});
+		}
+	});	
+
+	//POST /printer/gcode/script?script=G28
+	$(".control-clear").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = printers[data.index];
+
+		var endpoint = "/printer/gcode/script?script=SDCARD_RESET_FILE";
+		$.ajax({
+			url: printer.host + endpoint,
+			type: 'POST',
+			contentType: 'application/json',
+			timeout: _ajaxTimeout,
+			success: function(data) { 
+				alert("Job Reset.");
+			},
+			error: function(err) { 
+				alert(`failure! ${err}`);
+			}
+		});
+
+	});		
+
 	//set inital to snapshot
 	$("img.cam").each(function() {
 		var data = JSON.parse($(this).attr("data"));
@@ -576,32 +743,19 @@ function setup() {
 	var timer = setInterval(function() { updateAll(); }, 1000);	
 }
 
-$(".e-stop").click(function(e) {
-	if(confirm("Are you sure you want to stop?")) {
-		var data = JSON.parse($(this).attr("data"));
-		var endpoint = "/printer/emergency_stop";
-		var printer = printers[data.index];
-		$.ajax({
-			url: printer.host + endpoint,
-			type: 'POST',
-			contentType: 'application/json',
-			timeout: _ajaxTimeout,
-			success: function(data) { 
-				alert("success!");
-			},
-			error: function(err) { 
-				alert(`failure! ${err}`);
-			}
-		});
-	}
-})
+
 
 const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
 	"celsius":"&#8451;", 
-	"octagon":"&#128721;", 
+	//"octagon":"&#128721;", 
+	"octagon":"<i class='fa fa-exclamation-triangle icon' />",
+	"play":"<i class='fa fa-play icon' />",
+	"stop":"<i class='fa fa-stop icon' />",
+	"pause":"<i class='fa fa-pause icon' />",
+	"refresh":"<i class='fa fa-refresh icon' />"
 };
 
 $().ready(function(){	
-	setup();	
+	setup();
 	updateAll();	
 });
