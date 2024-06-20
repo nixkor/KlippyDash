@@ -8,15 +8,15 @@ var _printerObjects = new Array();
 var _ajaxTimeout = 10 * 1000;
 var printers;
 
-String.prototype.format = String.prototype.f = function() {
-    var s = this,
-        i = arguments.length;
-
-    while (i--) {
-        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
-    }
-    return s;
-};
+//String.prototype.format = String.prototype.f = function() {
+//   var s = this,
+//      i = arguments.length;
+//
+//   while (i--) {
+//        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+//   }
+//    return s;
+//};
 
 function getPrinterObjects(printer, index) {
 	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
@@ -99,12 +99,7 @@ function processStatus(printer, index) {
 	$(`#tile${index}>.section-time`).text(Date().toString());
 
 	clearErrors(index);
-
-	$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
-	$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
-	$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
-	$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
-	$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");
+	setControls(index,"idle");
 	
 	//check connections and show warnings / errors
 	if(!si.klippy_connected) {
@@ -178,58 +173,29 @@ function processStatus(printer, index) {
 					divPrintStats.find(".eta-time").text(endTime.toLocaleString());
 				}
 				divPrintStats.find(".printing-container").removeClass("hidden");
-				if(po.print_stats.state == "printing") { //printing
-					$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
-					$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
-					$(`#tile${index}>.title-container>.control-wrap>.control-pause`).removeClass("hidden");
-				}
-				else { //paused
-					$(`#tile${index}>.title-container>.control-wrap>.control-resume`).removeClass("hidden");
-					$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
-					$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).removeClass("hidden");
-				}
-				//$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).removeClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).removeClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");	
-				
+				setControls(index, po.print_stats.state);			
 			}
 			else if(po.display_status.progress > 0) { //complete
 				divPrintStats.find(".printing-container").addClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");		
+
+				setControls(index,"complete");
 			}
 			else{ //starting up
 				divPrintStats.find(".remaining-time").html("<span class='dynamic-value'>Calculating...</span>");
 				divPrintStats.find(".eta-time").text("Calculating...");
 
 				divPrintStats.find(".printing-container").removeClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-pause`).removeClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).removeClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).removeClass("hidden");
-				$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");
-				
+				setControls(index, "idle")
 			}
 			
 			divPrintStats.removeClass("hidden");
 	}
 	else if(po.print_stats.state == "cancelled") { //cancelled
-		$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-clear`).removeClass("hidden");			
+		setControls(index, "cancelled");
 	}
 	else { //idle
 		divPrintStats.addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-resume`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-pause`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-cancel`).addClass("hidden");		
-		$(`#tile${index}>.title-container>.control-wrap>.control-e-stop`).addClass("hidden");
-		$(`#tile${index}>.title-container>.control-wrap>.control-clear`).addClass("hidden");
+		setControls(index, "idle");
 	}
 		
 	//errors
@@ -237,6 +203,57 @@ function processStatus(printer, index) {
 		showError(index,`Error: ${po.print_stats.message}`);
 		setProgressBar(index,1,"error")
 	}
+}
+
+function setControls(index, state) {
+	switch(state) {
+		case "printing":
+			setControlVisibility(index,"resume", false);
+			setControlVisibility(index,"pause", true);
+			setControlVisibility(index,"cancel",false);
+			setControlVisibility(index,"e-stop",true);
+			setControlVisibility(index,"clear",false);
+			break;
+		case "paused":
+			setControlVisibility(index,"resume",true);
+			setControlVisibility(index,"pause",false);
+			setControlVisibility(index,"cancel",true);
+			setControlVisibility(index,"e-stop",true);
+			setControlVisibility(index,"clear",false);
+			break;
+		case "cancelled":
+			setControlVisibility(index,"resume",false);
+			setControlVisibility(index,"pause",false);
+			setControlVisibility(index,"cancel",false);
+			setControlVisibility(index,"e-stop",false);
+			setControlVisibility(index,"clear",true);
+			break;
+		case "error":
+		case "complete":
+		case "idle":
+		default:
+			setControlVisibility(index,"resume",false);
+			setControlVisibility(index,"pause",false);
+			setControlVisibility(index,"cancel",false);
+			setControlVisibility(index,"e-stop",false);
+			setControlVisibility(index,"clear",false);
+	}
+}
+
+function setControlVisibility(index, name, visible) {
+	var ctrl = getControl(index,name);
+	if(typeof(ctrl) != "undefined" && ctrl.length>0) {
+		if(visible){
+			ctrl.removeClass("hidden");
+		}
+		else {
+			ctrl.addClass("hidden");
+		}
+	}
+}
+
+function getControl(index, name) {
+	return $(`#tile${index}>.title-container>.control-wrap>.control-${name}`);
 }
 
 function formatTime(seconds, mode = "compact-html") {	
@@ -504,7 +521,6 @@ function createTiles() {
 						.attr("href",val.host + "/")
 						.append($("<img>")
 							.attr("class","cam")
-							.attr("width","800")
 							.attr("data",JSON.stringify(data))
 						)
 					)
@@ -703,7 +719,7 @@ function setup() {
 		}
 	});	
 
-	//POST /printer/gcode/script?script=G28
+	
 	$(".control-clear").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
 		var printer = printers[data.index];
@@ -743,7 +759,9 @@ function setup() {
 	var timer = setInterval(function() { updateAll(); }, 1000);	
 }
 
-
+function insertFontAwesomeHtml(faName) {
+	return `<i class='fa fa-${faName}} icon' />`
+}
 
 const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
 	"celsius":"&#8451;", 
