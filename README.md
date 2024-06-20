@@ -2,7 +2,7 @@
 Lightweight Klipper Dashboard built on Moonraker API
 
 
-<img src="docs/img/screenshot.jpg" width="925" height="500">
+<img src="docs/img/screenshot.jpg" width="800">
 
 ## Why?
 Mainsail and Fluidd are great for control, but I was looking for a lightweight dashboard that shows only the information I care about.  I wanted something that could handle multiple printers and would display cleanly on both desktop and mobile.  
