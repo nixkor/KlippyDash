@@ -381,9 +381,13 @@ div.stats {
 }
 
 .footer	 {
-	position: absolute;
-	bottom: 0px;
+	position: fixed; bottom: 0; left: 0;
 	height: 20px;
 	width: 100%;
 	font-size: .8em;
+	/*
+	background-color: var(--tile-bg-color);
+	border-top: gray 1px solid;
+	padding-top:7px;
+	*/
 }

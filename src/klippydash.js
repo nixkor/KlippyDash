@@ -185,7 +185,7 @@ function processStatus(printer, index) {
 				divPrintStats.find(".eta-time").text("Calculating...");
 
 				divPrintStats.find(".printing-container").removeClass("hidden");
-				setControls(index, "idle")
+				setControls(index, "printing");
 			}
 			
 			divPrintStats.removeClass("hidden");
@@ -228,8 +228,14 @@ function setControls(index, state) {
 			setControlVisibility(index,"e-stop",false);
 			setControlVisibility(index,"clear",true);
 			break;
+		case "complete":			
+			setControlVisibility(index,"resume",false);
+			setControlVisibility(index,"pause",false);
+			setControlVisibility(index,"cancel",false);
+			setControlVisibility(index,"e-stop",false);
+			setControlVisibility(index,"clear",true);		
+			break;
 		case "error":
-		case "complete":
 		case "idle":
 		default:
 			setControlVisibility(index,"resume",false);
@@ -646,7 +652,7 @@ function setup() {
 				contentType: 'application/json',
 				timeout: _ajaxTimeout,
 				success: function(data) { 
-					alert("E-STOP Successful!");
+					//alert("E-STOP Successful!");
 				},
 				error: function(err) { 
 					alert(`failure! ${err}`);
@@ -668,7 +674,7 @@ function setup() {
 				contentType: 'application/json',
 				timeout: _ajaxTimeout,
 				success: function(data) { 
-					alert("Job Paused!");
+					//alert("Job Paused!");
 				},
 				error: function(err) { 
 					alert(`failure! ${err}`);
@@ -689,7 +695,7 @@ function setup() {
 				contentType: 'application/json',
 				timeout: _ajaxTimeout,
 				success: function(data) { 
-					alert("Job Resumed!");
+					//alert("Job Resumed!");
 				},
 				error: function(err) { 
 					alert(`failure! ${err}`);
@@ -710,7 +716,7 @@ function setup() {
 				contentType: 'application/json',
 				timeout: _ajaxTimeout,
 				success: function(data) { 
-					alert("Job Cancelled!");
+					//alert("Job Cancelled!");
 				},
 				error: function(err) { 
 					alert(`failure! ${err}`);
@@ -731,7 +737,7 @@ function setup() {
 			contentType: 'application/json',
 			timeout: _ajaxTimeout,
 			success: function(data) { 
-				alert("Job Reset.");
+				//alert("Job Reset.");
 			},
 			error: function(err) { 
 				alert(`failure! ${err}`);
