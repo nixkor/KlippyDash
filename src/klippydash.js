@@ -8,16 +8,6 @@ var _printerObjects = new Array();
 var _ajaxTimeout = 10 * 1000;
 var printers;
 
-//String.prototype.format = String.prototype.f = function() {
-//   var s = this,
-//      i = arguments.length;
-//
-//   while (i--) {
-//        s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
-//   }
-//    return s;
-//};
-
 function getPrinterObjects(printer, index) {
 	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
 
@@ -631,7 +621,7 @@ function createTiles() {
 			)
 	});
 
-	canvas.append($("<div>").attr("class","footer").text("KlippyDash - a lightweight Klipper dashboard."));
+	canvas.append($("<div>").attr("class","footer").html("<a href='https://github.com/nixkor/KlippyDash'>KlippyDash</a> - a lightweight Klipper dashboard."));
 }
 
 function setup() {
@@ -771,7 +761,6 @@ function insertFontAwesomeHtml(faName) {
 
 const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
 	"celsius":"&#8451;", 
-	//"octagon":"&#128721;", 
 	"octagon":"<i class='fa fa-exclamation-triangle icon' />",
 	"play":"<i class='fa fa-play icon' />",
 	"stop":"<i class='fa fa-stop icon' />",

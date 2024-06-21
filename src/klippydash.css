@@ -373,7 +373,13 @@ div.stats {
   	}				
 }
 
-
+a {
+	color: lightgray;
+	text-decoration:none;
+}
+a:hover {
+	text-decoration:underline;
+}
 
 
 .title {
