@@ -6,7 +6,7 @@ var _serverInfo = new Array();
 var _printerInfo = new Array();
 var _printerObjects = new Array();
 var _ajaxTimeout = 10 * 1000;
-var printers;
+var _printers;
 
 function getPrinterObjects(printer, index) {
 	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
@@ -51,7 +51,7 @@ function getPrinterInfo(printer, index) {
 
 }
 
-function getServerInfo(printer, index) {
+function getServerInfo(printer, index) { 
 	var endpoint = "/server/info";
 	
 	$.ajax({
@@ -385,7 +385,7 @@ function updateCamera(printer, index) {
 }
 
 function updateAll() {
-	printers.forEach(function(val, index, arr) {
+	_printers.forEach(function(val, index, arr) {
 		updatePrinter(val, index);
 	});
 }
@@ -466,7 +466,7 @@ function setProgressBar(index, percent, state, message = undefined) {
 function createTiles() {
 	var canvas = $("#klippydash");
 
-	printers.forEach(function(val, index, arr) {
+	_printers.forEach(function(val, index, arr) {
 		var data = {"index": index}; 
 	
 		//build the tiles
@@ -624,15 +624,16 @@ function createTiles() {
 	canvas.append($("<div>").attr("class","footer").html("<a href='https://github.com/nixkor/KlippyDash'>KlippyDash</a> - a lightweight Klipper dashboard."));
 }
 
-function setup() {
-	printers = settings.printers;
+function setup() {	
+	
+	_printers = filterPrinters();
 
 	createTiles();
 
 	//bind jquery handlers
 	$(".control-e-stop").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = printers[data.index];
+		var printer = _printers[data.index];
 
 		if(confirm(`Are you sure you want to emergency stop?\n\nPrinter: ${printer.name}`)) {
 			var endpoint = "/printer/emergency_stop";
@@ -653,7 +654,7 @@ function setup() {
 
 	$(".control-pause").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = printers[data.index];
+		var printer = _printers[data.index];
 
 		if(confirm(`Are you sure you want to pause?\n\nPrinter: ${printer.name}`)) {
 			var endpoint = "/printer/print/pause";
@@ -675,7 +676,7 @@ function setup() {
 
 	$(".control-resume").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = printers[data.index];
+		var printer = _printers[data.index];
 
 		if(confirm(`Are you sure you want to resume?\n\nPrinter: ${printer.name}`)) {
 			var endpoint = "/printer/print/resume";
@@ -696,7 +697,7 @@ function setup() {
 	
 	$(".control-cancel").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = printers[data.index];
+		var printer = _printers[data.index];
 
 		if(confirm(`Are you sure you want to cancel?\n\nPrinter: ${printer.name}`)) {
 			var endpoint = "/printer/print/cancel";
@@ -718,7 +719,7 @@ function setup() {
 	
 	$(".control-clear").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = printers[data.index];
+		var printer = _printers[data.index];
 
 		var endpoint = "/printer/gcode/script?script=SDCARD_RESET_FILE";
 		$.ajax({
@@ -739,20 +740,43 @@ function setup() {
 	//set inital to snapshot
 	$("img.cam").each(function() {
 		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
+		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
 	
 	//set hover to stream
 	$("img.cam").hover(function(e) {
 		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", printers[data.index].host + "/webcam/?action=stream");
+		$(this).attr("src", _printers[data.index].host + "/webcam/?action=stream");
 	},
 	function(e) {
 		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
+		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
 	
 	var timer = setInterval(function() { updateAll(); }, 1000);	
+
+
+	//filter printers based on querystring
+	function filterPrinters() {
+		var allPrinters = settings.printers;
+		
+		if (location.search.length > 1) {  //make sure we have a querystring worth evaluating
+			var queryStringArray = location.search.substring(1).split(',');  //querystring is expected to be comma separated list of ints
+
+			var filteredPrinters = new Array();
+			queryStringArray.forEach(function (val, index, arr) {  
+				if (Number.parseInt(val) >= 0
+					&& Number.parseInt(val) < allPrinters.length) { //do some sanity checking on string value
+					filteredPrinters.push(allPrinters[Number.parseInt(val)]);
+				}
+			});
+
+			return filteredPrinters;
+		}
+		else {
+			return allPrinters;
+		}
+	}
 }
 
 function insertFontAwesomeHtml(faName) {
