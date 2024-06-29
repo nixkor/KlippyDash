@@ -23,6 +23,7 @@ A great use case for this is Device UI/print_host_webui setting in [Orcaslicer](
   * Resume
   * Cancel
   * E-Stop
+* Filterable Printers via querystring - pass comma-separated list of values in to filter printers by order in config. (e.g. /index.html?0 will return the first printer only if more than one is configured). **This is useful for configuring with OrcaSlicer.**
 * Lightweight - I like to leave a tab open all the time to monitor.  Both Mainsail and Fluidd use more resources than I would like for this use case.   Currently I have one printer running Mainsail using 160mb of browser memory and one running Fluidd using 243mb of memory where KlippyDash is using 63mb (based on Chrome tab memory).
  
 ## Warning!
