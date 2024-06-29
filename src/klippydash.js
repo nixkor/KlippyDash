@@ -624,9 +624,33 @@ function createTiles() {
 	canvas.append($("<div>").attr("class","footer").html("<a href='https://github.com/nixkor/KlippyDash'>KlippyDash</a> - a lightweight Klipper dashboard."));
 }
 
+//filter printers based on querystring
+function filterPrinters() {
+	var allPrinters = settings.printers;
+	
+	if (location.search.length > 1) {  //make sure we have a querystring worth evaluating
+		var queryStringArray = location.search.substring(1).split(',');  //querystring is expected to be comma separated list of ints - substring removes the leading ?
+
+		var filteredPrinters = new Array();
+		queryStringArray.forEach(function (val, index, arr) {  
+			if (Number.parseInt(val) >= 0
+				&& Number.parseInt(val) < allPrinters.length) { //do some sanity checking on string value
+				filteredPrinters.push(allPrinters[Number.parseInt(val)]);
+			}
+		});
+
+		return filteredPrinters;
+	}
+	else {
+		return allPrinters;
+	}
+}
+
 function setup() {	
 	
 	_printers = filterPrinters();
+
+	if(settings.ajaxTimeout > 0) _ajaxTimeout = Number.parseInt(settings.ajaxTimeout);
 
 	createTiles();
 
@@ -752,31 +776,10 @@ function setup() {
 		var data = JSON.parse($(this).attr("data"));
 		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
-	
-	var timer = setInterval(function() { updateAll(); }, 1000);	
 
-
-	//filter printers based on querystring
-	function filterPrinters() {
-		var allPrinters = settings.printers;
-		
-		if (location.search.length > 1) {  //make sure we have a querystring worth evaluating
-			var queryStringArray = location.search.substring(1).split(',');  //querystring is expected to be comma separated list of ints
-
-			var filteredPrinters = new Array();
-			queryStringArray.forEach(function (val, index, arr) {  
-				if (Number.parseInt(val) >= 0
-					&& Number.parseInt(val) < allPrinters.length) { //do some sanity checking on string value
-					filteredPrinters.push(allPrinters[Number.parseInt(val)]);
-				}
-			});
-
-			return filteredPrinters;
-		}
-		else {
-			return allPrinters;
-		}
-	}
+	var interval = 1000;
+	if(settings.refreshInterval > 0) interval = Number.parseInt(settings.refreshInterval);		
+	var timer = setInterval(function() { updateAll(); }, interval);	//This is the timer that refreshes the screen. 
 }
 
 function insertFontAwesomeHtml(faName) {
