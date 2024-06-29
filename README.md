@@ -7,7 +7,7 @@ Lightweight Klipper Dashboard built on Moonraker API
 ## Why?
 Mainsail and Fluidd are great for control, but I was looking for a lightweight dashboard that shows only the information I care about.  I wanted something that could handle multiple printers and would display cleanly on both desktop and mobile.
 
-A great use case for this is Device UI/print_host_webui setting in [Orcaslicer](https://github.com/SoftFever/OrcaSlicer).  KlippyDash will give you a view of whats happening, without adding unnecessary bloat to Orcaslicer.
+A great use case for this is Device UI/print_host_webui setting in [OrcaSlicer](https://github.com/SoftFever/OrcaSlicer).  KlippyDash will give you a view of whats happening, without adding unnecessary bloat to OrcaSlicer.
 
 ## Features
 * Camera View
