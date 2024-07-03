@@ -5,6 +5,7 @@ https://github.com/nixkor/KlippyDash
 :root {
 	--bg-color: #140049;
 	--text-color: gray;
+	--link-color: rgb(216, 216, 216);
 
 	--tile-bg-color:#111111;
 	--tile-dynamic-text-color: rgb(216, 216, 216);
@@ -16,6 +17,7 @@ https://github.com/nixkor/KlippyDash
 	--progress-bar-bg-color: #555555;
 	--progress-bar-color: #0C0C8E;
 	--progress-bar-border: #666 1px solid;
+	--progress-bar-text-color: white;
 	/*--progress-bar-animation:pulse 5s linear infinite;*/
 	
 	--success-progress-bar-color: #22db09;
@@ -62,7 +64,7 @@ https://github.com/nixkor/KlippyDash
 	--printing-progress-bar-color: rgb(33, 110, 255);
 	--printing-progress-text-color: white;	
 	--printing-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
-	--printing-progress-bar-background-size: 800px;
+	--printing-progress-bar-background-size: 100%;
 /*
 	--printing-progress-bar-animation:
 	--printing-progress-bar-pulse-color-1:
@@ -75,7 +77,40 @@ https://github.com/nixkor/KlippyDash
 	--pulse-color-1:#0C0C8E;
 	--pulse-color-2: hsl(240, 90%, 20%);
 
-	--footer-color:var(--text-color);
+	--control-pause-color: gold;;
+	--control-resume-color: green;
+	--control-cancel-color: darkred;
+	--control-clear-color: green;
+	--control-estop-color: darkred;
+
+	--footer-color:var(--text-color);	
+	--timestamp-color:var(--text-color);
+}
+
+[data-theme="light"] {
+	--bg-color:#eee;
+	--text-color: black;
+	--tile-bg-color:#ccedf1;
+	--title-text-color: #000;
+	--tile-dynamic-text-color:black;
+	--link-color: rgb(0, 74, 185);
+	--printing-progress-bar-color: rgb(33, 192, 255);
+	--printing-progress-text-color: white;	
+	--printing-progress-bar-background-image: ;
+	--control-pause-color: gold;;
+	--control-resume-color: rgb(0, 180, 0);
+	--control-cancel-color: red;
+	--control-clear-color: rgb(0, 180, 0);
+	--control-estop-color: red;	
+
+
+}
+
+[data-theme="dark"] {
+	--bg-color:#333;
+	--text-color: gray;
+	--link-color: rgb(216, 216, 216);
+	--tile-bg-color:#111;
 }
 
 [data-theme="orcaslicer"] {
@@ -84,6 +119,7 @@ https://github.com/nixkor/KlippyDash
 	--success-progress-bar-color: var(--orcaslicer-teal);
 	--tile-bg-color:hsl(190, 12%, 17%);
 	--bg-color: hsl(190, 9%, 25%);
+	--link-color: var(--orcaslicer-teal);
 	--printing-progress-bar-color: var(--orcaslicer-teal);
 	--lighten-overlay-color: hsva(190,15,50,0.5)
 	--darken-overlay-color: rgba(0, 0, 0, 0.5);
@@ -92,16 +128,18 @@ https://github.com/nixkor/KlippyDash
 
 [data-theme="miami"] {
 	--color-white: white;
-	--color-pink: hotpink;
-	--color-teal: #00f7ff;
+	--color-pink: hsl(323, 90%, 60%);
+	--color-teal: hsl(182, 90%, 50%);
 	--color-black: black;
+	--color-darkgray: #222;
 	--color-green: #5fff4a;
-	--color-red: #ff2d2d;
-	--color-yellow: yellow;
+	--color-red: #ff7070;
+	--color-yellow: rgb(255, 255, 113);
 
 	--bg-color: var(--color-pink);
-	--tile-bg-color: var(--color-black);
+	--tile-bg-color: var(--color-darkgray);
 	--text-color: var(--color-pink);
+	--link-color: var(--color-teal);
 	--tile-dynamic-text-color: var(--color-teal);
 	--title-text-color:var(--color-teal);
 	--success-progress-bar-color: var(--color-green);
@@ -110,13 +148,18 @@ https://github.com/nixkor/KlippyDash
 	--success-progress-bar-background-size: 800px;	
 	--error-progress-bar-color: var(--color-red);
 	--warning-progress-bar-color: var(--color-yellow);
-	--footer-color:var(--color-teal);
+	--footer-color:var(--color-black);
+
+	--printing-progress-bar-color: var(--color-teal);
+	--progress-bar-bg-color: var(--color-black);
 
 	--control-pause-color: var(--color-yellow);
 	--control-resume-color: var(--color-green);
 	--control-cancel-color: var(--color-red);
 	--control-clear-color: var(--color-green);
 	--control-estop-color: var(--color-red);
+
+	--timestamp-color:var(--color-white);
 }
 
 body {
@@ -171,6 +214,7 @@ div.stats {
 .section-time {
 	margin-top:20px;
     text-align: left;
+	color: var(--timestamp-color);
 }
 
 .hidden {
@@ -200,11 +244,13 @@ div.stats {
 	font-size: 2em;
 	font-weight: bold;
 	margin: 2px 0 10px 0;
+	/*
 	paint-order: stroke fill;
 	@supports (-webkit-text-stroke: 1px black) {
 		  -webkit-text-fill-color: var(--title-text-color);
 		  -webkit-text-stroke: 1px black;
-	}	
+	}
+		  */	
 }
 
 .progress-bar {
@@ -243,14 +289,14 @@ div.stats {
 .progress-bar-text {
 	
 	margin-left: 10px;
-	color: white;
+	color: var(--progress-bar-text-color);
 	font-weight: bold;
 	white-space: nowrap;
 	text-align: left;
 	font-size:1.3em;
 	paint-order: stroke fill;
 	@supports (-webkit-text-stroke: 1px black) {
-		  -webkit-text-fill-color: white;
+		  -webkit-text-fill-color: var(--progress-bar-text-color);
 		  -webkit-text-stroke: 2px black;
 	}		
 }
@@ -491,7 +537,7 @@ div.stats {
 }
 
 a {
-	color: lightgray;
+	color: var(--link-color);
 	text-decoration:none;
 }
 a:hover {
