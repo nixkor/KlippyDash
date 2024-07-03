@@ -1,13 +1,19 @@
 # KlippyDash
-Lightweight Klipper Dashboard built on Moonraker API
+Lightweight Klipper Dashboard built on [Moonraker](https://github.com/Arksine/moonraker) API
 
-
-<img src="docs/img/screenshot.jpg" width="800">
+<p style="text-align:center;">
+  <img src="docs/img/screenshot.jpg" width="800" />
+</p>
 
 ## Why?
-Mainsail and Fluidd are great for control, but I was looking for a lightweight dashboard that shows only the information I care about.  I wanted something that could handle multiple printers and would display cleanly on both desktop and mobile.
+Other UIs are great for control, but I was looking for a lightweight dashboard that shows only the information I care about.  I wanted something that could handle multiple printers and would display quickly and cleanly on both desktop and mobile.
 
-A great use case for this is Device UI/print_host_webui setting in [OrcaSlicer](https://github.com/SoftFever/OrcaSlicer).  KlippyDash will give you a view of whats happening, without adding unnecessary bloat to OrcaSlicer.
+A great use case for this is the device tab in [OrcaSlicer](https://github.com/SoftFever/OrcaSlicer).  KlippyDash will give you a view of whats happening, without adding unnecessary bloat to OrcaSlicer.
+
+
+<p style="text-align:center;">
+  <img src="docs/img/orcaslicer.jpg" width="800" />
+</p>>
 
 ## Features
 * Camera View
@@ -23,7 +29,8 @@ A great use case for this is Device UI/print_host_webui setting in [OrcaSlicer](
   * Resume
   * Cancel
   * E-Stop
-* Filterable Printers via querystring - pass comma-separated list of values in to filter printers by order in config. (e.g. /index.html?0 will return the first printer only if more than one is configured). **This is useful for configuring with OrcaSlicer.**
+* Themes! - via querystring - Set default themees.  Override themes with querystring. e.g. `/index.html?theme=miami`.  Current options: default, light, dark, miami
+* Filterable Printers via querystring - pass comma-separated list of values in to filter printers by order in config. (e.g. `/index.html?printerFilter=0` will return the first printer only if more than one is configured). 
 * Lightweight - I like to leave a tab open all the time to monitor.  Both Mainsail and Fluidd use more resources than I would like for this use case.   Currently I have one printer running Mainsail using 160mb of browser memory and one running Fluidd using 243mb of memory where KlippyDash is using 63mb (based on Chrome tab memory).
  
 ## Warning!
@@ -33,10 +40,13 @@ Before we move on, this project currently doesn't have many (any?) security feat
 1. Host files on webserver of choice on a private network.
    * You can open this from a local folder if you configure your CORS policy appropriately.  This is only recommended in non-prod environments per moonraker documentation.
 3. Edit moonraker.conf - documentation here: https://moonraker.readthedocs.io/en/latest/configuration/#authorization
-   * Ensure \[trusted_clients\] is configured correclty for your network/server.
-   * Ensure \[cors_domains\] is configured correctly for your network/server
-4. Edit settings.js
-5. Profit?
+   * Ensure `[trusted_clients]` is configured correclty for your network/server.
+   * Ensure `[cors_domains]` is configured correctly for your network/server
+4. Edit `settings.js`
+   * Settings are documented in comments.
+5. Integrate with OrcaSlicer device tab - **This requires hosting on a webserver AFAIK**
+   * `Connections/Physical Printer` -> `Device UI`:  `<url>/index.html?theme=orcaslicer&printerFilter=0`
+6. Profit?
 
 ## TODO
 * Add authentication
