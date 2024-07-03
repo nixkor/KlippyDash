@@ -8,6 +8,16 @@ var _printerObjects = new Array();
 var _ajaxTimeout = 10 * 1000;
 var _printers;
 
+
+const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
+	"celsius":"&#8451;", 
+	"octagon":"<i class='fa fa-exclamation-triangle icon' />",
+	"play":"<i class='fa fa-play icon' />",
+	"stop":"<i class='fa fa-stop icon' />",
+	"pause":"<i class='fa fa-pause icon' />",
+	"refresh":"<i class='fa fa-refresh icon' />"
+};
+
 function getPrinterObjects(printer, index) {
 	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
 
@@ -625,11 +635,11 @@ function createTiles() {
 }
 
 //filter printers based on querystring
-function filterPrinters() {
+function filterPrinters(dictQueryString) {
 	var allPrinters = settings.printers;
-	
-	if (location.search.length > 1) {  //make sure we have a querystring worth evaluating
-		var queryStringArray = location.search.substring(1).split(',');  //querystring is expected to be comma separated list of ints - substring removes the leading ?
+
+	if("printerFilter" in dictQueryString) {
+		var queryStringArray = dictQueryString["printerFilter"].split(',');  //querystring is expected to be comma separated list of ints - substring removes the leading ?
 
 		var filteredPrinters = new Array();
 		queryStringArray.forEach(function (val, index, arr) {  
@@ -637,8 +647,7 @@ function filterPrinters() {
 				&& Number.parseInt(val) < allPrinters.length) { //do some sanity checking on string value
 				filteredPrinters.push(allPrinters[Number.parseInt(val)]);
 			}
-		});
-
+		});			
 		return filteredPrinters;
 	}
 	else {
@@ -646,9 +655,30 @@ function filterPrinters() {
 	}
 }
 
-function setup() {	
+function parseQueryString() {
+	var dict = {};
+	if(location.search.length > 1) {
+			var queryString = location.search.substring(1); //remove the ? 
+			var pairs = queryString.split("&"); // split querystring on ampersand into kv pairs
+			pairs.forEach(function(pair, index, arr) {
+				var kvp = pair.split("=");  //split pair on equals into parts
+				var key = kvp[0];
+				var value = kvp[1];
+
+				value = decodeURIComponent(value);
+				value = value.replace(/\+/g, ' ');
+
+				dict[key] = value;
+			});
+	}
 	
-	_printers = filterPrinters();
+	return dict;
+}
+
+function setup() {	
+	dictQueryString = parseQueryString();
+	
+	_printers = filterPrinters(dictQueryString);
 
 	if(settings.ajaxTimeout > 0) _ajaxTimeout = Number.parseInt(settings.ajaxTimeout);
 
@@ -777,23 +807,17 @@ function setup() {
 		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
 
+	//set theme if passed in querystring
+	var theme = settings.theme;
+	if("theme" in dictQueryString) 
+		theme = dictQueryString["theme"];
+	document.documentElement.setAttribute("data-theme",theme);
+
 	var interval = 1000;
-	if(settings.refreshInterval > 0) interval = Number.parseInt(settings.refreshInterval);		
+	if(settings.refreshInterval > 0) interval = Number.parseInt(settings.refreshInterval);
+			
 	var timer = setInterval(function() { updateAll(); }, interval);	//This is the timer that refreshes the screen. 
 }
-
-function insertFontAwesomeHtml(faName) {
-	return `<i class='fa fa-${faName}} icon' />`
-}
-
-const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
-	"celsius":"&#8451;", 
-	"octagon":"<i class='fa fa-exclamation-triangle icon' />",
-	"play":"<i class='fa fa-play icon' />",
-	"stop":"<i class='fa fa-stop icon' />",
-	"pause":"<i class='fa fa-pause icon' />",
-	"refresh":"<i class='fa fa-refresh icon' />"
-};
 
 $().ready(function(){	
 	setup();

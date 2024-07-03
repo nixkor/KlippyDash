@@ -4,33 +4,126 @@ https://github.com/nixkor/KlippyDash
 */
 :root {
 	--bg-color: #140049;
-	--tile-bg-color: #111111;
-	--tile-dynamic-text-color: white;
-	--tile-border-radius: 10px;
-	--tile-border: #333 1px solid;
-	--title-text-color: white;
 	--text-color: gray;
+
+	--tile-bg-color:#111111;
+	--tile-dynamic-text-color: rgb(216, 216, 216);
+	--tile-border: #333 1px solid;
+	--tile-border-radius: 10px;
+	
+	--title-text-color:  rgb(216,216,216); 
+	
 	--progress-bar-bg-color: #555555;
 	--progress-bar-color: #0C0C8E;
 	--progress-bar-border: #666 1px solid;
-	--success-progress-bar-color: green;
+	/*--progress-bar-animation:pulse 5s linear infinite;*/
+	
+	--success-progress-bar-color: #22db09;
 	--success-progress-text-color: white;
+	--success-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
+	--success-progress-bar-background-size: 800px;
+	/*
+	--success-progesss-bar-animation:pulse 5s linear infinite;
+	--success-progress-bar-pulse-color-1: #22db09;
+	--success-progress-bar-pulse-color-2: #0f9b2d;
+	*/
+	
 	--warning-progress-bar-color: gold;
 	--warning-progress-text-color: black;
+	/*
+	--warning-progress-bar-background-image:
+	--warning-progress-bar-background-size:
+	--warning-progress-bar-animation:
+	--warning-progress-bar-pulse-color-1:
+	--warning-progress-bar-pulse-color-2:
+	*/
+	
 	--error-progress-bar-color: #D61B1B;
 	--error-progress-text-color: white;
-	--standby-progress-bar-color: #505050;
-	--standby-progress-text-color: white;	
+	/*
+	--error-progress-bar-background-image:
+	--error-progress-bar-background-size:
+	--error-progress-bar-animation:
+	--error-progress-bar-pulse-color-1:
+	--error-progress-bar-pulse-color-2:
+	*/
 	
+	--standby-progress-bar-color:rgb(110, 110, 110);
+	--standby-progress-text-color: white;	
+	/*
+	--standby-progress-bar-background-image:linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color)); 
+	--standby-progress-bar-background-size: 800px;
+	*/
+	--standby-progesss-bar-animation:pulse 5s linear infinite;
+	--standby-progress-bar-pulse-color-1: rgb(110, 110, 110);
+	--standby-progress-bar-pulse-color-2: rgb(48, 48, 48);
+
+
+	--printing-progress-bar-color: rgb(33, 110, 255);
+	--printing-progress-text-color: white;	
+	--printing-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
+	--printing-progress-bar-background-size: 800px;
+/*
+	--printing-progress-bar-animation:
+	--printing-progress-bar-pulse-color-1:
+	--printing-progress-bar-pulse-color-2:
+*/	
+
 	--lighten-overlay-color: rgba(255,255,255,0.2);
-	--darken-overlay-color: rgba(0, 0, 0, 0.2);
+	--darken-overlay-color: rgba(0, 0, 0, 0.5);
+
+	--pulse-color-1:#0C0C8E;
+	--pulse-color-2: hsl(240, 90%, 20%);
+
+	--footer-color:var(--text-color);
+}
+
+[data-theme="orcaslicer"] {
+	--orcaslicer-teal: #009688;
+
+	--success-progress-bar-color: var(--orcaslicer-teal);
+	--tile-bg-color:hsl(190, 12%, 17%);
+	--bg-color: hsl(190, 9%, 25%);
+	--printing-progress-bar-color: var(--orcaslicer-teal);
+	--lighten-overlay-color: hsva(190,15,50,0.5)
+	--darken-overlay-color: rgba(0, 0, 0, 0.5);
+	--standby-progress-bar-color: hsl(189, 65%, 10%); 
+}
+
+[data-theme="miami"] {
+	--color-white: white;
+	--color-pink: hotpink;
+	--color-teal: #00f7ff;
+	--color-black: black;
+	--color-green: #5fff4a;
+	--color-red: #ff2d2d;
+	--color-yellow: yellow;
+
+	--bg-color: var(--color-pink);
+	--tile-bg-color: var(--color-black);
+	--text-color: var(--color-pink);
+	--tile-dynamic-text-color: var(--color-teal);
+	--title-text-color:var(--color-teal);
+	--success-progress-bar-color: var(--color-green);
+	--success-progress-text-color: var(--color-white);
+	--success-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
+	--success-progress-bar-background-size: 800px;	
+	--error-progress-bar-color: var(--color-red);
+	--warning-progress-bar-color: var(--color-yellow);
+	--footer-color:var(--color-teal);
+
+	--control-pause-color: var(--color-yellow);
+	--control-resume-color: var(--color-green);
+	--control-cancel-color: var(--color-red);
+	--control-clear-color: var(--color-green);
+	--control-estop-color: var(--color-red);
 }
 
 body {
 	position:relative;
 	padding-bottom:30px;
 	font-family: arial;
-	font-size: 12pt;
+	font-size: 1em;
 	background-color: var(--bg-color); 
 	color: var(--text-color);
 }
@@ -164,8 +257,12 @@ div.stats {
 	
 /* success */
 .progress-bar-progress.success {
-	/*background-color: var(--success-progress-bar-color) !important;*/
-	background-image: linear-gradient(to left, #46df38,#04690c);
+	background-image: var(--success-progress-bar-background-image);
+	background-size: var(--success-progress-bar-background-size);
+	background-color: var(--success-progress-bar-color);
+	--pulse-color-1: var(--success-progress-bar-pulse-color-1);
+	--pulse-color-2: var(--success-progress-bar-pulse-color-2);
+	animation: var(--success-progesss-bar-animation);
 }
 
 .progress-bar-progress.success>.progress-bar-text {
@@ -174,7 +271,13 @@ div.stats {
 
 /* warning */
 .progress-bar-progress.warning {
-	background-color: var(--warning-progress-bar-color) !important;
+	background-image: var(--warning-progress-bar-background-image);
+	background-size: var(--warning-progress-bar-background-size);
+	background-color: var(--warning-progress-bar-color);
+	--pulse-color-1: var(--warning-progress-bar-pulse-color-1);
+	--pulse-color-2: var(--warning-progress-bar-pulse-color-2);
+	animation: var(--warning-progesss-bar-animation);
+
 }
 
 .progress-bar-progress.warning>.progress-bar-text {
@@ -183,41 +286,64 @@ div.stats {
 
 /* error */
 .progress-bar-progress.error {
-	background-color: var(--error-progress-bar-color) !important;
-	/*animation: alarm-gradient 5s linear infinite;*/
-}
-
-@keyframes alarm-gradient {
-	0%{background-color:black;}
-	49%{background-color:red;}
-	50%{background-color:white;}
-	51%{background-color:red;}
-	99%{background-color:black;}
-	100%{background-color:white;}
+	background-image: var(--error-progress-bar-background-image);
+	background-size: var(--error-progress-bar-background-size);
+	background-color: var(--error-progress-bar-color);
+	--pulse-color-1: var(--error-progress-bar-pulse-color-1);
+	--pulse-color-2: var(--error-progress-bar-pulse-color-2);
+	animation: var(--error-progesss-bar-animation);
 }
 
 .progress-bar-progress.error>.progress-bar-text {
 	color: var(--error-progress-text-color) !important;
 }
 
-
 /* success */
 .progress-bar-progress.printing {
 		/*background-size: 800px 800px;*/
+		/*
 		background-color: silver;
 		background-image: linear-gradient(to right, hsla(219, 100%, 64%, 1), hwb(187 27% 0% / 1));
+		*/
+		/*background-image: linear-gradient(45deg, var(--lighten-overlay-color) 25%, transparent 25%, transparent 50%, var(--lighten-overlay-color) 50%, var(--lighten-overlay-color) 75%, transparent 75%, transparent);*/
+		/*
+		background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
+		background-size: 800px;
+		background-color: var(--printing-progress-bar-color);
+		*/
+		background-image: var(--printing-progress-bar-background-image);
+		background-size: var(--printing-progress-bar-background-size);
+		background-color: var(--printing-progress-bar-color);
+		--pulse-color-1: var(--printing-progress-bar-pulse-color-1);
+		--pulse-color-2: var(--printing-progress-bar-pulse-color-2);
+		animation: var(--printing-progesss-bar-animation);		
 }
 
 .progress-bar-progress.printing>.progress-bar-text {
-	color: var(--success-progress-text-color) !important;
+	color: var(--printing-progress-text-color) !important;
 }
 
-
+/* standby */
 .progress-bar-progress.standby {
-	/*background-color: var(--standby-progress-bar-color);*/
-	/*background-image: linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,0), rgba(0,0,0,.5));*/
-	animation: pulse 5s linear infinite;
-	/*animation: rainbow-road 5s linear infinite;*/
+	background-image: var(--standby-progress-bar-background-image);
+	background-size: var(--standby-progress-bar-background-size);
+	background-color:var(--standby-progress-bar-color);
+	--pulse-color-1: var(--standby-progress-bar-pulse-color-1);
+	--pulse-color-2: var(--standby-progress-bar-pulse-color-2);
+	animation: var(--standby-progesss-bar-animation);
+}
+
+.progress-bar-progress.standby>.progress-bar-text {
+	color: var(--standby-progress-text-color) !important;
+}
+
+@keyframes alarm-gradient {
+	0%{background-color:black;}
+	49%{background-color:red;}
+	/*50%{background-color:white;}* hide the strobe */
+	51%{background-color:red;}
+	100%{background-color:black;}
+	/*100%{background-color:white;} hide strobe */
 }
 
 @keyframes rainbow-road {
@@ -245,13 +371,9 @@ div.stats {
 }
 
 @keyframes pulse {
-	0%{background-color:rgba(64, 64, 64, 1)}
-	50%{background-color:rgba(128, 128, 128, 1)}
-	100%{background-color:rgba(64, 64, 64, 1)}
-}
-
-.progress-bar-progress.standby>.progress-bar-text {
-	color: var(--standby-progress-text-color) !important;
+	0% {background-color: var(--pulse-color-1);}
+	50% {background-color: var(--pulse-color-2);}
+	100% {background-color: var(--pulse-color-1);}
 }
 
 .progress-bar-progress.party-time {
@@ -306,11 +428,9 @@ div.stats {
 }
 
 .control-e-stop, .control-resume, .control-pause, .control-cancel, .control-clear {
-	/*float: right;*/
 	cursor:pointer;
 	font-size:2em;
 	align-content:center;
-	/*padding:0;*/
 	margin:0;
 
 	padding: 0 10px;
@@ -326,19 +446,16 @@ div.stats {
 }
 
 .control-e-stop:hover {
-	--color-icon: red;
+	--color-icon: var(--control-estop-color);
 	color: var(--color-icon);
-	/*
 	@supports (-webkit-text-fill-color: var(--color-icon)){
 		-webkit-text-fill-color: var(--color-icon);
 		-webkit-text-stroke-color: black;
-  	}				
-	*/
-	
+  	}					
 }
 
 .control-resume:hover {
-	--color-icon: rgb(0, 194, 0);
+	--color-icon: var(--control-resume-color);
 	color: var(--color-icon);
 	@supports (-webkit-text-fill-color: var(--color-icon)){
 		-webkit-text-fill-color: var(--color-icon);
@@ -347,7 +464,7 @@ div.stats {
 }
 
 .control-pause:hover {
-	--color-icon: gold;
+	--color-icon: var(--control-pause-color);
 	color: var(--color-icon);
 	@supports (-webkit-text-fill-color: var(--color-icon)){
 		-webkit-text-fill-color: var(--color-icon);
@@ -356,7 +473,7 @@ div.stats {
 }
 
 .control-cancel:hover {
-	--color-icon: red;
+	--color-icon: var(--control-cancel-color);
 	color: var(--color-icon);
 	@supports (-webkit-text-fill-color: var(--color-icon)){
 		-webkit-text-fill-color: var(--color-icon);
@@ -365,7 +482,7 @@ div.stats {
 }
 
 .control-clear:hover {
-	--color-icon: lightgreen;
+	--color-icon: var(--control-clear-color);
 	color: var(--color-icon);
 	@supports (-webkit-text-fill-color: var(--color-icon)){
 		-webkit-text-fill-color: var(--color-icon);
@@ -391,6 +508,7 @@ a:hover {
 	height: 20px;
 	width: 100%;
 	font-size: .8em;
+	color:var(--footer-color);
 	/*
 	background-color: var(--tile-bg-color);
 	border-top: gray 1px solid;
