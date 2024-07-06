@@ -3,35 +3,58 @@ KlippyDash
 https://github.com/nixkor/KlippyDash
 */
 :root {
+
+	/* these set the color of progress bars and icons at the highest level */
+	--color-success: green;
+	--color-warning: gold;
+	--color-error: red;
+
+	/* progress bar text */
+	--color-light-text: white;
+	--color-dark-text: black;
+
+
+	/* background */
 	--bg-color: #140049;
 	--text-color: gray;
 	--link-color: rgb(216, 216, 216);
 
+	/* tile */
 	--tile-bg-color:#111111;
 	--tile-dynamic-text-color: rgb(216, 216, 216);
 	--tile-border: #333 1px solid;
-	--tile-border-radius: 10px;
-	
+	--tile-border-radius: 10px;	
 	--title-text-color:  rgb(216,216,216); 
 	
+	/* default progress bar colors */
 	--progress-bar-bg-color: #555555;
 	--progress-bar-color: #0C0C8E;
 	--progress-bar-border: #666 1px solid;
 	--progress-bar-text-color: white;
 	/*--progress-bar-animation:pulse 5s linear infinite;*/
-	
-	--success-progress-bar-color: #22db09;
-	--success-progress-text-color: white;
+
+
+	/* overlay colors - used in some linear fade effects to overlay base color */
+	--lighten-overlay-color: rgba(255,255,255,0.2);
+	--darken-overlay-color: rgba(0, 0, 0, 0.5);
+
+	/* pulse animation default colors - can be overridde on a individual bar level below... */
+	--pulse-color-1:#0C0C8E;
+	--pulse-color-2: hsl(240, 90%, 20%);
+		
+	/* below here are progress bar defaults - trying to genericize when it makes sense and use variables  */
+	--success-progress-bar-color: var(--color-success);
+	--success-progress-text-color: var(--color-light-text);
 	--success-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
-	--success-progress-bar-background-size: 800px;
+	--success-progress-bar-background-size: 100%;
 	/*
 	--success-progesss-bar-animation:pulse 5s linear infinite;
 	--success-progress-bar-pulse-color-1: #22db09;
 	--success-progress-bar-pulse-color-2: #0f9b2d;
 	*/
-	
-	--warning-progress-bar-color: gold;
-	--warning-progress-text-color: black;
+	 
+	--warning-progress-bar-color: var(--color-warning);
+	--warning-progress-text-color:  var(--color-dark-text);
 	/*
 	--warning-progress-bar-background-image:
 	--warning-progress-bar-background-size:
@@ -40,8 +63,8 @@ https://github.com/nixkor/KlippyDash
 	--warning-progress-bar-pulse-color-2:
 	*/
 	
-	--error-progress-bar-color: #D61B1B;
-	--error-progress-text-color: white;
+	--error-progress-bar-color: var(--color-error);
+	--error-progress-text-color: var(--color-light-text);
 	/*
 	--error-progress-bar-background-image:
 	--error-progress-bar-background-size:
@@ -50,8 +73,8 @@ https://github.com/nixkor/KlippyDash
 	--error-progress-bar-pulse-color-2:
 	*/
 	
-	--standby-progress-bar-color:rgb(110, 110, 110);
-	--standby-progress-text-color: white;	
+	--standby-progress-bar-color: rgb(110, 110, 110);
+	--standby-progress-text-color: var(--color-light-text);
 	/*
 	--standby-progress-bar-background-image:linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color)); 
 	--standby-progress-bar-background-size: 800px;
@@ -61,9 +84,9 @@ https://github.com/nixkor/KlippyDash
 	--standby-progress-bar-pulse-color-2: rgb(48, 48, 48);
 
 
-	--printing-progress-bar-color: rgb(33, 110, 255);
-	--printing-progress-text-color: white;	
-	--printing-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
+	--printing-progress-bar-color: rgb(0, 122, 192);
+	--printing-progress-text-color: var(--color-light-text);
+	--printing-progress-bar-background-image: linear-gradient(to right, rgba(0,0,0,0), rgba(0, 255, 64, 0.25));
 	--printing-progress-bar-background-size: 100%;
 /*
 	--printing-progress-bar-animation:
@@ -71,94 +94,140 @@ https://github.com/nixkor/KlippyDash
 	--printing-progress-bar-pulse-color-2:
 */	
 
-	--lighten-overlay-color: rgba(255,255,255,0.2);
-	--darken-overlay-color: rgba(0, 0, 0, 0.5);
 
-	--pulse-color-1:#0C0C8E;
-	--pulse-color-2: hsl(240, 90%, 20%);
-
-	--control-pause-color: gold;;
-	--control-resume-color: green;
-	--control-cancel-color: darkred;
-	--control-clear-color: green;
-	--control-estop-color: darkred;
+/* setting default values, which can be further broken out on a theme level */
+	--control-pause-color: var(--color-warning);
+	--control-resume-color: var(--color-success);
+	--control-cancel-color: var(--color-error);
+	--control-clear-color: var(--color-success);
+	--control-estop-color: var(--color-error);
 
 	--footer-color:var(--text-color);	
 	--timestamp-color:var(--text-color);
+
+	--cam-width: 800px;
+	--cam-height: calc(var(--cam-width) * 3 / 4);  /* 4:3 ratio with bars */
 }
 
 [data-theme="light"] {
-	--bg-color:#eee;
+	--color-success: rgb(0, 194, 113);
+	--color-warning: gold;
+	--color-error: red;
+
+
+	--bg-color:#silver;
 	--text-color: black;
-	--tile-bg-color:#ccedf1;
+	--tile-bg-color:#bebebe;
 	--title-text-color: #000;
 	--tile-dynamic-text-color:black;
 	--link-color: rgb(0, 74, 185);
+
+	--standby-progress-bar-color: #666;
+	--standby-progress-bar-background-image: none;
+	--standby-progesss-bar-animation: none;
+	--printing-progress-bar-color: rgb(33, 192, 255);
+	--printing-progress-bar-background-image: none;
+	--warning-progress-bar-color: var(--color-warning);
+	--warning-progress-bar-background-image: none;
+	--error-progress-bar-color: var(--color-error);
+	--error-progress-bar-background-image: none;	
+	--success-progress-bar-color: var(--color-success);
+	--success-progress-bar-background-image: none;
+		
 	--printing-progress-bar-color: rgb(33, 192, 255);
 	--printing-progress-text-color: white;	
-	--printing-progress-bar-background-image: ;
-	--control-pause-color: gold;;
-	--control-resume-color: rgb(0, 180, 0);
-	--control-cancel-color: red;
-	--control-clear-color: rgb(0, 180, 0);
-	--control-estop-color: red;	
+	--printing-progress-bar-background-image: none;
+	--progress-bar-bg-color: rgb(206, 206, 206);
 
-
+	--tile-border: #666 1px solid;
 }
 
 [data-theme="dark"] {
+	--color-success: rgb(0, 136, 79);
+	--color-warning: rgb(206,175,0);
+	--color-error: rgb(196,0,0);
+
 	--bg-color:#333;
 	--text-color: gray;
 	--link-color: rgb(216, 216, 216);
 	--tile-bg-color:#111;
+
+	--progress-bar-bg-color: #333;
+	--lighten-overlay-color: #111;
+	/*
+	--darken-overlay-color: rgba(0, 0, 0, 0.5);
+	*/
+
+	--printing-progress-bar-color: rgb(0, 99, 138);
+	--printing-progress-bar-background-image: linear-gradient(to right, rgba(0,0,0,0), rgba(0, 255, 170, 0.5));
+
+	--success-progress-bar-background-image: none;
+
+	--tile-border: #666 1px solid;
 }
 
 [data-theme="orcaslicer"] {
 	--orcaslicer-teal: #009688;
+	--orcaslicer-background: hsl(190, 9%, 25%);
+	--orcaslicer-highlight-1: hsl(190, 12%, 17%);
+	--orcaslicer-highlight-2:  hsl(189, 65%, 10%); 
+	--color-success: rgb(0, 194, 113);
+	--color-warning: rgb(206,175,0);
+	--color-error: rgb(196,0,0);
 
-	--success-progress-bar-color: var(--orcaslicer-teal);
-	--tile-bg-color:hsl(190, 12%, 17%);
-	--bg-color: hsl(190, 9%, 25%);
-	--link-color: var(--orcaslicer-teal);
+	/* flatten  progress barsbars */
+	--standby-progress-bar-color: var(--orcaslicer-highlight-2);
+	--standby-progress-bar-background-image: none;
+	--standby-progesss-bar-animation: none;
 	--printing-progress-bar-color: var(--orcaslicer-teal);
+	--printing-progress-bar-background-image: none;
+	--warning-progress-bar-color: var(--color-warning);
+	--warning-progress-bar-background-image: none;
+	--error-progress-bar-color: var(--color-error);
+	--error-progress-bar-background-image: none;	
+	--success-progress-bar-color: var(--color-success);
+	--success-progress-bar-background-image: none;
+
+	--tile-bg-color: var(--orcaslicer-highlight-1);
+	--bg-color: var(--orcaslicer-background);
+	--link-color: var(--orcaslicer-teal);
 	--lighten-overlay-color: hsva(190,15,50,0.5)
 	--darken-overlay-color: rgba(0, 0, 0, 0.5);
-	--standby-progress-bar-color: hsl(189, 65%, 10%); 
+	--title-text-color: var(--orcaslicer-teal);
+	--tile-border: #666 1px solid;
+
 }
 
 [data-theme="miami"] {
 	--color-white: white;
-	--color-pink: hsl(323, 90%, 60%);
+	--color-pink: hsl(323, 100%, 74%);
 	--color-teal: hsl(182, 90%, 50%);
 	--color-black: black;
 	--color-darkgray: #222;
 	--color-green: #5fff4a;
-	--color-red: #ff7070;
+	--color-red: #ff2f2f;
 	--color-yellow: rgb(255, 255, 113);
+	--color-orange: rgb(255, 211, 114);
+
+	--color-success: var(--color-green);
+	--color-warning: var(--color-yellow);
+	--color-error: var(var(--color-red));
 
 	--bg-color: var(--color-pink);
 	--tile-bg-color: var(--color-darkgray);
 	--text-color: var(--color-pink);
 	--link-color: var(--color-teal);
 	--tile-dynamic-text-color: var(--color-teal);
-	--title-text-color:var(--color-teal);
-	--success-progress-bar-color: var(--color-green);
-	--success-progress-text-color: var(--color-white);
-	--success-progress-bar-background-image: linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));
-	--success-progress-bar-background-size: 800px;	
-	--error-progress-bar-color: var(--color-red);
-	--warning-progress-bar-color: var(--color-yellow);
-	--footer-color:var(--color-black);
+	--title-text-color: var(--color-orange);
+	--tile-border: var(--color-teal) 2px solid;
+	--tile-border-radius: none;
 
-	--printing-progress-bar-color: var(--color-teal);
 	--progress-bar-bg-color: var(--color-black);
+	--printing-progress-bar-color: var(--color-teal);
+	--success-progress-bar-background-image: none; /* linear-gradient(to right, var(--darken-overlay-color), var(--lighten-overlay-color));*/
+	--success-progress-bar-background-size: 800px;	
 
-	--control-pause-color: var(--color-yellow);
-	--control-resume-color: var(--color-green);
-	--control-cancel-color: var(--color-red);
-	--control-clear-color: var(--color-green);
-	--control-estop-color: var(--color-red);
-
+	--footer-color:var(--color-black);
 	--timestamp-color:var(--color-white);
 }
 
@@ -176,20 +245,18 @@ body.alert {
 	background-color: red;;
 }
 
+
 img.cam {
-	width:800px;
+	width:var(--cam-width);
+	
 }
 
 div.cam {
-	height: 600px;
-	width: 800px;
+	height: var(--cam-height);
+	width: var(--cam-width);
 	align-content: center;
 	background-color: black;
-	/* TODO: figure out how to make this work (doesnt center)
-	border: 5px solid black;
-	border-top: 0px;
-	border-bottom: 0px;
-	*/
+	border: 1px solid black;
 }
 
 div.stats {
@@ -231,8 +298,8 @@ div.stats {
   vertical-align:top;
   padding: 15px;
   margin: 20px;
-  width: 800px;
-  height: auto; 
+  width: auto;
+  height: auto;
   background-color: var(--tile-bg-color);
   color: var(--text-color);
   border-radius: var(--tile-border-radius);
