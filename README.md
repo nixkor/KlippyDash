@@ -29,12 +29,12 @@ A great use case for this is the device tab in [OrcaSlicer](https://github.com/S
   * Resume
   * Cancel
   * E-Stop
-* Themes! - via querystring - Set default themees.  Override themes with querystring. e.g. `/index.html?theme=miami`.  Current options: default, light, dark, miami
+* Themes! - via querystring - Set default themees.  Override themes with querystring. e.g. `/index.html?theme=miami`.  Current options: default, light, dark, miami, orcaslicer
 * Filterable Printers via querystring - pass comma-separated list of values in to filter printers by order in config. (e.g. `/index.html?printerFilter=0` will return the first printer only if more than one is configured). 
 * Lightweight - I like to leave a tab open all the time to monitor.  Both Mainsail and Fluidd use more resources than I would like for this use case.   Currently I have one printer running Mainsail using 160mb of browser memory and one running Fluidd using 243mb of memory where KlippyDash is using 63mb (based on Chrome tab memory).
  
 ## Warning!
-Before we move on, this project currently doesn't have many (any?) security features baked in and I am comfortable with that in my environment. But make sure you understand the implications of the moonraker.conf changes required to make this work in your environment, especially if you want to run it from a local folder.
+Before we move on, this project currently doesn't have many (any?) security features baked in and I am comfortable with that in my environment. But make sure you understand the implications of the moonraker.conf changes required to make this work in your environment, especially if you want to run it from a local folder.  This has been tested with Moonraker v0.8.
 
 ## Installation 
 1. Host files on webserver of choice on a private network.
@@ -53,10 +53,10 @@ Before we move on, this project currently doesn't have many (any?) security feat
 * Add additional metrics
   * Speed
   * Flow
-  * Layer Counts?
+  * Layers
   * System Stats (load/cp/mem)
 * Add additional basic controls
   * Restart firmware / Klipper
   * Home / Temp Presets
 * Update to Websockets
-
+* More themes!
