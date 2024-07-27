@@ -33,7 +33,7 @@ function getPrinterObjects(printer, index) {
 		},
 		error:function(err)
 		{
-			showError(index, `Error connecting to ${printer.name}`);
+			showError(index, `Error connecting to ${printer.name}`, false);
 			setProgressBar(index,1,"error")
 		}
 	});
@@ -54,7 +54,7 @@ function getPrinterInfo(printer, index) {
 		},
 		error:function(err)
 		{
-			showError(index, `Error connecting to ${printer.name}`);
+			showError(index, `Error connecting to ${printer.name}`, false);
 			setProgressBar(index,1,"error")
 		}
 	});
@@ -73,7 +73,7 @@ function getServerInfo(printer, index) {
 			processStatus(printer, index);
 		},
 		error: function(err) { 
-			showError(index, `Error connecting to ${printer.name}`);
+			showError(index, `Error connecting to ${printer.name}`,false);
 			setProgressBar(index,1,"error")
 		}
 	});
@@ -365,13 +365,15 @@ function clearErrors(index) {
 	}
 }
 
-function showError(index, message) {
+function showError(index, message, alert = true) {
 	var div = $(`#tile${index}>.section-error`);
 
 	div.html(message);
 	div.removeClass("hidden");
 
-	$("body").addClass("alert");
+	if(alert) {
+		$("body").addClass("alert");
+	}
 }
 
 function updatePrinterInfo(printer,index) {
