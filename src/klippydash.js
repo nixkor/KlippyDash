@@ -58,7 +58,6 @@ function getPrinterInfo(printer, index) {
 			setProgressBar(index,1,"error")
 		}
 	});
-
 }
 
 function getServerInfo(printer, index) { 
@@ -225,14 +224,14 @@ function setControls(index, state) {
 			setControlVisibility(index,"resume",false);
 			setControlVisibility(index,"pause",false);
 			setControlVisibility(index,"cancel",false);
-			setControlVisibility(index,"e-stop",false);
+			setControlVisibility(index,"e-stop",true);
 			setControlVisibility(index,"clear",true);
 			break;
 		case "complete":			
 			setControlVisibility(index,"resume",false);
 			setControlVisibility(index,"pause",false);
 			setControlVisibility(index,"cancel",false);
-			setControlVisibility(index,"e-stop",false);
+			setControlVisibility(index,"e-stop",true);
 			setControlVisibility(index,"clear",true);		
 			break;
 		case "error":
@@ -241,7 +240,7 @@ function setControls(index, state) {
 			setControlVisibility(index,"resume",false);
 			setControlVisibility(index,"pause",false);
 			setControlVisibility(index,"cancel",false);
-			setControlVisibility(index,"e-stop",false);
+			setControlVisibility(index,"e-stop",true);
 			setControlVisibility(index,"clear",false);
 	}
 }
@@ -394,10 +393,19 @@ function updateCamera(printer, index) {
 	}
 }
 
+function refreshTitle() {
+	if($("body").hasClass("alert"))
+		document.title = "!!! ALERT !!! KlippyDash";
+	else 
+		document.title = "KlippyDash";
+}
+
 function updateAll() {
 	_printers.forEach(function(val, index, arr) {
 		updatePrinter(val, index);
 	});
+
+	refreshTitle();
 }
 
 function setProgressBar(index, percent, state, message = undefined) {
@@ -631,6 +639,17 @@ function createTiles() {
 			)
 	});
 
+
+	//add error popups
+	canvas.append($("<div>")
+		.attr("id","confirmation-dialog")
+		.attr("title","Are you sure?")
+		.append($("<span>")
+			.attr("class","message")
+		)
+	);
+
+	//add footer
 	canvas.append($("<div>").attr("class","footer").html("<a href='https://github.com/nixkor/KlippyDash'>KlippyDash</a> - a lightweight Klipper dashboard."));
 }
 
@@ -675,6 +694,35 @@ function parseQueryString() {
 	return dict;
 }
 
+function showConfirmation(title, htmlMessage, endpoint) {
+	$("#confirmation-dialog").attr("title",title);
+	$("#confirmation-dialog>.message").html(htmlMessage);
+	$("#confirmation-dialog").dialog({
+		modal: true,
+		autoOpen: true,
+		width: 500,
+		resizable: false,
+		draggable:false,
+		buttons: {
+			"Yes" : function() { 
+				$.ajax({
+					url: endpoint,
+					type: 'POST',
+					contentType: 'application/json',
+					timeout: _ajaxTimeout,
+					error: function(err) { 
+						alert(`failure! ${err}`);
+					}
+				});
+				$(this).dialog("close"); 
+			},
+			"No" : function() { 
+				$(this).dialog("close"); 
+			} 
+		},
+	});
+}
+
 function setup() {	
 	dictQueryString = parseQueryString();
 	
@@ -689,87 +737,41 @@ function setup() {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
 		var printer = _printers[data.index];
 
-		if(confirm(`Are you sure you want to emergency stop?\n\nPrinter: ${printer.name}`)) {
-			var endpoint = "/printer/emergency_stop";
-			$.ajax({
-				url: printer.host + endpoint,
-				type: 'POST',
-				contentType: 'application/json',
-				timeout: _ajaxTimeout,
-				success: function(data) { 
-					//alert("E-STOP Successful!");
-				},
-				error: function(err) { 
-					alert(`failure! ${err}`);
-				}
-			});
-		}
+		showConfirmation("Emergency Stop?", 
+			`Are you sure you want to emergency stop?<br/><br />Printer: ${printer.name}`, 
+			`${printer.host}/printer/emergency_stop`
+		);
 	});
 
 	$(".control-pause").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
 		var printer = _printers[data.index];
-
-		if(confirm(`Are you sure you want to pause?\n\nPrinter: ${printer.name}`)) {
-			var endpoint = "/printer/print/pause";
-
-			$.ajax({
-				url: printer.host + endpoint,
-				type: 'POST',
-				contentType: 'application/json',
-				timeout: _ajaxTimeout,
-				success: function(data) { 
-					//alert("Job Paused!");
-				},
-				error: function(err) { 
-					alert(`failure! ${err}`);
-				}
-			});
-		}
+		
+		showConfirmation("Pause Print?", 
+			`Are you sure you want to pause?<br/><br />Printer: ${printer.name}`, 
+			`${printer.host}/printer/print/pause`
+		);
 	});
 
 	$(".control-resume").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
 		var printer = _printers[data.index];
-
-		if(confirm(`Are you sure you want to resume?\n\nPrinter: ${printer.name}`)) {
-			var endpoint = "/printer/print/resume";
-			$.ajax({
-				url: printer.host + endpoint,
-				type: 'POST',
-				contentType: 'application/json',
-				timeout: _ajaxTimeout,
-				success: function(data) { 
-					//alert("Job Resumed!");
-				},
-				error: function(err) { 
-					alert(`failure! ${err}`);
-				}
-			});
-		}
+		
+		showConfirmation("Resume?", 
+			`Are you sure you want to resume?<br/><br />Printer: ${printer.name}`, 
+			`${printer.host}/printer/print/resume`
+		);
 	});
 	
 	$(".control-cancel").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
 		var printer = _printers[data.index];
 
-		if(confirm(`Are you sure you want to cancel?\n\nPrinter: ${printer.name}`)) {
-			var endpoint = "/printer/print/cancel";
-			$.ajax({
-				url: printer.host + endpoint,
-				type: 'POST',
-				contentType: 'application/json',
-				timeout: _ajaxTimeout,
-				success: function(data) { 
-					//alert("Job Cancelled!");
-				},
-				error: function(err) { 
-					alert(`failure! ${err}`);
-				}
-			});
-		}
-	});	
-
+		showConfirmation("Cancel?", 
+			`Are you sure you want to cancel?<br/><br />Printer: ${printer.name}`, 
+			`${printer.host}/printer/print/cancel`
+		);
+	});
 	
 	$(".control-clear").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
@@ -781,14 +783,11 @@ function setup() {
 			type: 'POST',
 			contentType: 'application/json',
 			timeout: _ajaxTimeout,
-			success: function(data) { 
-				//alert("Job Reset.");
-			},
+
 			error: function(err) { 
 				alert(`failure! ${err}`);
 			}
 		});
-
 	});		
 
 	//set inital to snapshot
@@ -807,6 +806,11 @@ function setup() {
 		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
 	});
 
+	//set full screen if passed
+	if("fullscreen" in dictQueryString && JSON.parse(dictQueryString["fullscreen"])) {
+		$("body").addClass("full-screen");
+	}
+
 	//set theme if passed in querystring
 	var theme = settings.theme;
 	if("theme" in dictQueryString) 
@@ -819,7 +823,25 @@ function setup() {
 	var timer = setInterval(function() { updateAll(); }, interval);	//This is the timer that refreshes the screen. 
 }
 
-$().ready(function(){	
+var party = {
+	_timer: undefined,
+	On: function(seconds = 30) {
+		if(this._timer !== undefined) {
+			party.Off(); //turn off the previous party!
+		}	
+		$("body").addClass("party-time");		
+		this._timer = setTimeout(() => { party.Off(); }, seconds * 1000);
+	},
+	Off: function() {
+		clearInterval(this._timer);
+		$("body").removeClass("party-time");
+		this._timer = undefined;
+	},
+	AreWePartying: function() { return (this._timer !== undefined); }
+} 
+
+$().ready(() => {	
 	setup();
-	updateAll();	
+	updateAll();
 });
+

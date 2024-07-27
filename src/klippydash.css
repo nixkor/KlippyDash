@@ -13,12 +13,16 @@ https://github.com/nixkor/KlippyDash
 	--color-light-text: white;
 	--color-dark-text: black;
 
-
 	/* background */
 	--bg-color: #140049;
 	--text-color: gray;
 	--link-color: rgb(216, 216, 216);
 
+	/* highlights */
+	--base-color: var(--bg-color);
+	--highlight-color: #999;
+	--lowlight-color: #333;
+	
 	/* tile */
 	--tile-bg-color:#111111;
 	--tile-dynamic-text-color: rgb(216, 216, 216);
@@ -32,7 +36,6 @@ https://github.com/nixkor/KlippyDash
 	--progress-bar-border: #666 1px solid;
 	--progress-bar-text-color: white;
 	/*--progress-bar-animation:pulse 5s linear infinite;*/
-
 
 	/* overlay colors - used in some linear fade effects to overlay base color */
 	--lighten-overlay-color: rgba(255,255,255,0.2);
@@ -93,7 +96,7 @@ https://github.com/nixkor/KlippyDash
 	--printing-progress-bar-pulse-color-1:
 	--printing-progress-bar-pulse-color-2:
 */	
-
+	--party-time-background-image:none;
 
 /* setting default values, which can be further broken out on a theme level */
 	--control-pause-color: var(--color-warning);
@@ -105,8 +108,31 @@ https://github.com/nixkor/KlippyDash
 	--footer-color:var(--text-color);	
 	--timestamp-color:var(--text-color);
 
-	--cam-width: 800px;
-	--cam-height: calc(var(--cam-width) * 3 / 4);  /* 4:3 ratio with bars */
+	--cam-width: 100%; /*min(800px, 800px); */
+	--cam-height: auto;/* calc(var(--cam-width) * 3 / 4);  /* 4:3 ratio with bars */ 
+
+	--dialog-bg-color: var(--tile-bg-color);
+	--dialog-text-color: var(--title-text-color);
+	--dialog-border-color: var(--lowlight-color);
+	--dialog-title-bg-color: var(--base-color);
+	--dialog-title-text-color: var(--color-light-text);
+	--dialog-title-border-color: var(--lowlight-color);
+	--dialog-button-default-bg-color: var(--lowlight-color);
+	--dialog-button-default-border-color: var(--highlight-color);
+	--dialog-button-default-text-color: var(--color-light-text);
+	--dialog-button-focus-bg-color: var(--highlight-color);
+	--dialog-button-focus-border-color: var(--color-light-text);
+	--dialog-button-focus-text-color: var(--color-light-text);
+	--dialog-button-active-bg-color: var(--base-color);
+	--dialog-button-active-border-color: var(--color-light-text);
+	--dialog-button-active-text-color: var(--color-light-text);
+	--dialog-overlay-color: #5c5c5c;
+	--dialog-shadow-color: #ccc;
+
+	--ar: calc(4 / 3);
+	--w: 100vw / 3;
+	--h: calc(var(--w) / var(--ar));
+
 }
 
 [data-theme="light"] {
@@ -114,8 +140,7 @@ https://github.com/nixkor/KlippyDash
 	--color-warning: gold;
 	--color-error: red;
 
-
-	--bg-color:#silver;
+	--bg-color:#eee;
 	--text-color: black;
 	--tile-bg-color:#bebebe;
 	--title-text-color: #000;
@@ -140,6 +165,14 @@ https://github.com/nixkor/KlippyDash
 	--progress-bar-bg-color: rgb(206, 206, 206);
 
 	--tile-border: #666 1px solid;
+
+	--base-color: rgb(0, 159, 212);
+	--dialog-bg-color: var(--bg-color);
+	--dialog-button-default-bg-color: var(--highlight-color);
+	--dialog-button-default-border-color: var(--highlight-color);
+	--dialog-button-focus-bg-color: var(--base-color);
+	--dialog-button-focus-border-color: var(--lowlight-color);
+	
 }
 
 [data-theme="dark"] {
@@ -164,6 +197,12 @@ https://github.com/nixkor/KlippyDash
 	--success-progress-bar-background-image: none;
 
 	--tile-border: #666 1px solid;
+
+	--party-time-background-image:linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.7));
+
+	--base-color: #333;
+	--dialog-border-color: #333;
+	--dialog-button-active-bg-color: rgb(85, 0, 85);
 }
 
 [data-theme="orcaslicer"] {
@@ -171,6 +210,7 @@ https://github.com/nixkor/KlippyDash
 	--orcaslicer-background: hsl(190, 9%, 25%);
 	--orcaslicer-highlight-1: hsl(190, 12%, 17%);
 	--orcaslicer-highlight-2:  hsl(189, 65%, 10%); 
+	--orcaslicer-highlight-3:  hsl(188, 28%, 31%); 
 	--color-success: rgb(0, 194, 113);
 	--color-warning: rgb(206,175,0);
 	--color-error: rgb(196,0,0);
@@ -196,18 +236,25 @@ https://github.com/nixkor/KlippyDash
 	--title-text-color: var(--orcaslicer-teal);
 	--tile-border: #666 1px solid;
 
+	--dialog-bg-color: var(--orcaslicer-background);
+	--dialog-title-bg-color: var(--orcaslicer-teal);
+	--dialog-button-focus-bg-color: var(--orcaslicer-teal);
+	--dialog-border-color: var(--orcaslicer-highlight-3);
+	--dialog-text-color: var(--tile-dynamic-text-color);
+
+	--lowlight-color: var(--orcaslicer-highlight-3)
 }
 
 [data-theme="miami"] {
 	--color-white: white;
-	--color-pink: hsl(323, 100%, 74%);
+	--color-pink: hsl(323, 100%, 66%);
 	--color-teal: hsl(182, 90%, 50%);
 	--color-black: black;
 	--color-darkgray: #222;
 	--color-green: #5fff4a;
 	--color-red: #ff2f2f;
-	--color-yellow: rgb(255, 255, 113);
-	--color-orange: rgb(255, 211, 114);
+	--color-yellow: rgb(255, 255, 81);
+	--color-orange: hsl(41, 100%, 60%);
 
 	--color-success: var(--color-green);
 	--color-warning: var(--color-yellow);
@@ -229,6 +276,13 @@ https://github.com/nixkor/KlippyDash
 
 	--footer-color:var(--color-black);
 	--timestamp-color:var(--color-white);
+
+	--dialog-bg-color: var(--color-teal);
+	--dialog-title-bg-color: var(--color-darkgray);
+	--dialog-text-color: var(--color-darkgray);
+	--dialog-button-default-bg-color: var(--lowlight-color);
+	--dialog-button-focus-bg-color: var(--highlight-color);
+	--dialog-button-active-bg-color: var(--color-pink);
 }
 
 body {
@@ -245,18 +299,59 @@ body.alert {
 	background-color: red;;
 }
 
-
-img.cam {
-	width:var(--cam-width);
-	
+body.full-screen {
+	margin-top: min(2vh, 40px);
 }
 
+body.full-screen>div>div>div.cam {
+	min-width:60vw;
+}
+
+body.full-screen>div>div>div.cam>a>img.cam {
+	min-width:60vw;
+}
+
+#klippydash {
+	text-align: center;
+}
+
+.tile {
+	display: inline-block;
+	vertical-align:top;
+	padding: 15px;
+	margin: 20px;
+	width: auto;
+	height: auto;
+	background-color: var(--tile-bg-color);
+	color: var(--text-color);
+	border-radius: var(--tile-border-radius);
+	border: var(--tile-border);
+  }
+
 div.cam {
-	height: var(--cam-height);
-	width: var(--cam-width);
+	--wx: 800px;
+	--hx: calc(var(--w) / var(--ar));
+
+	width: auto;
+	height: auto; /*var(--cam-height);*/
+	min-width:800px;
+	max-width:max(800px, 40vw);	
 	align-content: center;
 	background-color: black;
 	border: 1px solid black;
+	padding-bottom:0px;
+}
+
+img.cam {
+	/*width:var(--cam-width);*/
+	/*
+	min-width:600px;
+	max-width:40vw;
+	width:var(--w);
+	*/
+	width:100%;
+	/*overflow: hidden;*/
+	margin-bottom:-4px;
 }
 
 div.stats {
@@ -278,6 +373,11 @@ div.stats {
 	border: var(--tile-border);
 }
 
+.section-file {
+	width: 100%;
+	/*overflow: hidden;*/
+}
+
 .section-time {
 	margin-top:20px;
     text-align: left;
@@ -287,23 +387,6 @@ div.stats {
 .hidden {
 	visibility: hidden;
 	display:none;
-}
-
-#klippydash {
-	text-align: center;
-}
-
-.tile {
-  display: inline-block;
-  vertical-align:top;
-  padding: 15px;
-  margin: 20px;
-  width: auto;
-  height: auto;
-  background-color: var(--tile-bg-color);
-  color: var(--text-color);
-  border-radius: var(--tile-border-radius);
-  border: var(--tile-border);
 }
 
 .title {
@@ -329,6 +412,7 @@ div.stats {
 	background-image: linear-gradient(45deg, var(--lighten-overlay-color) 25%, transparent 25%, transparent 50%, var(--lighten-overlay-color) 50%, var(--lighten-overlay-color) 75%, transparent 75%, transparent);
 	background-size: 40px 40px;		
 	border: var(--progress-bar-border);
+	width:100%;
 }
 
 .progress-bar.animated {
@@ -453,10 +537,15 @@ div.stats {
 @keyframes alarm-gradient {
 	0%{background-color:black;}
 	49%{background-color:red;}
-	/*50%{background-color:white;}* hide the strobe */
+	/*50%{background-color:white;} hide the strobe */
 	51%{background-color:red;}
 	100%{background-color:black;}
 	/*100%{background-color:white;} hide strobe */
+}
+
+body.party-time {
+	animation: rainbow-road 3s linear infinite;
+	background-image: var(--party-time-background-image);
 }
 
 @keyframes rainbow-road {
@@ -547,7 +636,7 @@ div.stats {
 	margin:0;
 
 	padding: 0 10px;
-	color: #bbb;
+	color: var(--lowlight-color);
 
 	/*
 	paint-order: stroke fill;
@@ -628,3 +717,4 @@ a:hover {
 	padding-top:7px;
 	*/
 }
+
