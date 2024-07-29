@@ -31,7 +31,7 @@ A great use case for this is the device tab in [OrcaSlicer](https://github.com/S
   * E-Stop
 * Themes! - via querystring - Set default themees.  Override themes with querystring. e.g. `/index.html?theme=miami`.  Current options: default, light, dark, miami, orcaslicer
 * Filterable Printers via querystring - pass comma-separated list of values in to filter printers by order in config. (e.g. `/index.html?printerFilter=0` will return the first printer only if more than one is configured). 
-* "Full-Screen" mode - pass fullscreen=1 in the querystring - recommended for Orcaslicer integration.
+* "Full-Screen" mode - pass fullscreen=1 in the querystring - recommended for OrcaSlicer integration.
 * Lightweight - I like to leave a tab open all the time to monitor.  Both Mainsail and Fluidd use more resources than I would like for this use case.   Currently I have one printer running Mainsail using 160mb of browser memory and one running Fluidd using 243mb of memory where KlippyDash is using 63mb (based on Chrome tab memory).
  
 ## Warning!
@@ -39,7 +39,7 @@ Before we move on, this project currently doesn't have many (any?) security feat
 
 ## Installation 
 1. Host files on webserver of choice on a private network.
-   * You can open this from a local folder if you configure your CORS policy appropriately.  This is only recommended in non-prod environments per moonraker documentation.
+   * You can open this from a local folder if you configure your CORS policy appropriately.  This is only recommended in non-prod environments per moonraker documentation, and will not work if you want to integrate with OrcaSlicer device tab.
 3. Edit moonraker.conf - documentation here: https://moonraker.readthedocs.io/en/latest/configuration/#authorization
    * Ensure `[trusted_clients]` is configured correclty for your network/server.
    * Ensure `[cors_domains]` is configured correctly for your network/server
