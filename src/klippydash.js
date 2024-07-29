@@ -659,8 +659,17 @@ function createTiles() {
 function filterPrinters(dictQueryString) {
 	var allPrinters = settings.printers;
 
-	if("printerFilter" in dictQueryString) {
-		var queryStringArray = dictQueryString["printerFilter"].split(',');  //querystring is expected to be comma separated list of ints - substring removes the leading ?
+	if("printer" in dictQueryString || "printerFilter" in dictQueryString) {
+		var queryStringArray;
+		if("printer" in dictQueryString) {
+			queryStringArray = dictQueryString["printer"].split(',');  //querystring is expected to be comma separated list of ints - substring removes the leading ?
+		}
+		else if("printerFilter" in dictQueryString)  {  //DEPRECATED - use printer
+			queryStringArray = dictQueryString["printerFilter"].split(',');  //querystring is expected to be comma separated list of ints - substring removes the leading ?
+		}
+		else { //this should never happen but just in case...
+			return allPrinters;
+		}
 
 		var filteredPrinters = new Array();
 		queryStringArray.forEach(function (val, index, arr) {  
