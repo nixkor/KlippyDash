@@ -501,6 +501,7 @@ function createTiles() {
 						.attr("class", "title")
 						.append($("<a>")
 						.attr("href",`${val.host}/`)
+							.attr("target","_blank")
 							.html(`${val.name}`)
 						)
 					)
@@ -866,12 +867,28 @@ function bindHandlers() {
 	//toggle full screen view if image is clicked
 	$("div.cam").click(function(e) {
 		var data = JSON.parse($(this).closest(".tile").attr("data"));
+
+		baseUrl = window.location.href.split('?')[0] 
+
+		if("theme" in dictQueryString) 
+			theme = dictQueryString["theme"];
+
 		//if full screen toggle back to full view
 		if("fullscreen" in dictQueryString && JSON.parse(dictQueryString["fullscreen"])) {
-			window.location.href = window.location.href.split('?')[0];
+			if(typeof(theme) !== "undefined") {
+				window.location.href = `${baseUrl}?theme=${theme}`;	
+			}
+			else {
+				window.location.href = baseUrl;
+			}
 		}
 		else{
-			window.location.href = window.location.href.split('?')[0] +  `?printer=${data.index}&fullscreen=1`;
+			if(typeof(theme) !== "undefined") {
+				window.location.href = `${baseUrl}?theme=${theme}&printer=${data.index}&fullscreen=1`;
+			}
+			else {
+				window.location.href = `${baseUrl}?printer=${data.index}&fullscreen=1`;
+			}
 		}
 	});
 }
