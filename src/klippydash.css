@@ -340,6 +340,7 @@ div.cam {
 	background-color: black;
 	border: 1px solid black;
 	padding-bottom:0px;
+	cursor:pointer;
 }
 
 img.cam {
