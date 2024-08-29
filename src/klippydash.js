@@ -388,7 +388,7 @@ function updatePrinter(printer, index) {
 }
 
 function updateCamera(printer, index) {
-	var cam = $(`#tile${index}>div.cam>a>img.cam`);
+	var cam = $(`#tile${index}>div.cam>img.cam`);
 	//only update if in snapshot mode?
 	if(cam.attr("src").includes("snapshot")) {
 		cam.attr("src", printer.host + "/webcam/?action=snapshot&cache=" + Math.random());
@@ -499,33 +499,40 @@ function createTiles() {
 					.attr("class","title-container")
 					.append($("<div>") //title
 						.attr("class", "title")
-						.html(`${val.name}`)
+						.append($("<a>")
+						.attr("href",`${val.host}/`)
+							.html(`${val.name}`)
+						)
 					)
 					.append($("<div>")
 						.attr("class","control-wrap") 
 						.append($("<span>")
 							.attr("class","control-resume hidden")
-							
+							.attr("title","Resume")
 							.attr("data",JSON.stringify(data))
 							.html(_htmlCode["play"])
 						)
 						.append($("<span>")
 							.attr("class","control-pause hidden")
+							.attr("title","Pause")
 							.attr("data",JSON.stringify(data))
 							.html(_htmlCode["pause"])
 						)						
 						.append($("<span>")
 							.attr("class","control-cancel hidden")
+							.attr("title","Cancel")
 							.attr("data",JSON.stringify(data))
 							.html(_htmlCode["stop"])
 						)
 						.append($("<span>")
 							.attr("class","control-clear hidden")
+							.attr("title","Clear")
 							.attr("data",JSON.stringify(data))
 							.html(_htmlCode["refresh"])
 						)																		
 						.append($("<span>")
 							.attr("class","control-e-stop hidden")
+							.attr("title","E-Stop")
 							.attr("data",JSON.stringify(data))
 							.html(_htmlCode["octagon"])
 						)
@@ -533,13 +540,10 @@ function createTiles() {
 				)
 				.append($("<div>") //camera 
 					.attr("class","cam")
-					.append($("<a>")
-						.attr("href",val.host + "/")
 						.append($("<img>")
 							.attr("class","cam")
 							.attr("data",JSON.stringify(data))
 						)
-					)
 				)
 				.append($("<div>")
 					.attr("class","progress-bar")
@@ -744,78 +748,7 @@ function setup() {
 	createTiles();
 
 	//bind jquery handlers
-	$(".control-e-stop").click(function(e) {
-		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = _printers[data.index];
-
-		showConfirmation("Emergency Stop?", 
-			`Are you sure you want to emergency stop?<br/><br />Printer: ${printer.name}`, 
-			`${printer.host}/printer/emergency_stop`
-		);
-	});
-
-	$(".control-pause").click(function(e) {
-		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = _printers[data.index];
-		
-		showConfirmation("Pause Print?", 
-			`Are you sure you want to pause?<br/><br />Printer: ${printer.name}`, 
-			`${printer.host}/printer/print/pause`
-		);
-	});
-
-	$(".control-resume").click(function(e) {
-		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = _printers[data.index];
-		
-		showConfirmation("Resume?", 
-			`Are you sure you want to resume?<br/><br />Printer: ${printer.name}`, 
-			`${printer.host}/printer/print/resume`
-		);
-	});
-	
-	$(".control-cancel").click(function(e) {
-		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = _printers[data.index];
-
-		showConfirmation("Cancel?", 
-			`Are you sure you want to cancel?<br/><br />Printer: ${printer.name}`, 
-			`${printer.host}/printer/print/cancel`
-		);
-	});
-	
-	$(".control-clear").click(function(e) {
-		var data = JSON.parse($(this).closest(".tile").attr("data"));
-		var printer = _printers[data.index];
-
-		var endpoint = "/printer/gcode/script?script=SDCARD_RESET_FILE";
-		$.ajax({
-			url: printer.host + endpoint,
-			type: 'POST',
-			contentType: 'application/json',
-			timeout: _ajaxTimeout,
-
-			error: function(err) { 
-				alert(`failure! ${err}`);
-			}
-		});
-	});		
-
-	//set inital to snapshot
-	$("img.cam").each(function() {
-		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
-	});
-	
-	//set hover to stream
-	$("img.cam").hover(function(e) {
-		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", _printers[data.index].host + "/webcam/?action=stream");
-	},
-	function(e) {
-		var data = JSON.parse($(this).attr("data"));
-		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
-	});
+	bindHandlers();
 
 	//set full screen if passed
 	if("fullscreen" in dictQueryString && JSON.parse(dictQueryString["fullscreen"])) {
@@ -855,4 +788,91 @@ $().ready(() => {
 	setup();
 	updateAll();
 });
+
+function bindHandlers() {
+	$(".control-e-stop").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = _printers[data.index];
+
+		showConfirmation("Emergency Stop?",
+			`Are you sure you want to emergency stop?<br/><br />Printer: ${printer.name}`,
+			`${printer.host}/printer/emergency_stop`
+		);
+	});
+
+	$(".control-pause").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = _printers[data.index];
+
+		showConfirmation("Pause Print?",
+			`Are you sure you want to pause?<br/><br />Printer: ${printer.name}`,
+			`${printer.host}/printer/print/pause`
+		);
+	});
+
+	$(".control-resume").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = _printers[data.index];
+
+		showConfirmation("Resume?",
+			`Are you sure you want to resume?<br/><br />Printer: ${printer.name}`,
+			`${printer.host}/printer/print/resume`
+		);
+	});
+
+	$(".control-cancel").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = _printers[data.index];
+
+		showConfirmation("Cancel?",
+			`Are you sure you want to cancel?<br/><br />Printer: ${printer.name}`,
+			`${printer.host}/printer/print/cancel`
+		);
+	});
+
+	$(".control-clear").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		var printer = _printers[data.index];
+
+		var endpoint = "/printer/gcode/script?script=SDCARD_RESET_FILE";
+		$.ajax({
+			url: printer.host + endpoint,
+			type: 'POST',
+			contentType: 'application/json',
+			timeout: _ajaxTimeout,
+
+			error: function(err) {
+				alert(`failure! ${err}`);
+			}
+		});
+	});
+
+	//set inital to snapshot
+	$("img.cam").each(function () {
+		var data = JSON.parse($(this).attr("data"));
+		$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
+	});
+
+	//set hover to stream
+	$("img.cam").hover(function(e) {
+		var data = JSON.parse($(this).attr("data"));
+		$(this).attr("src", _printers[data.index].host + "/webcam/?action=stream");
+	},
+	function(e) {
+			var data = JSON.parse($(this).attr("data"));
+			$(this).attr("src", _printers[data.index].host + "/webcam/?action=snapshot&cache=" + Math.random());
+	});
+
+	//toggle full screen view if image is clicked
+	$("div.cam").click(function(e) {
+		var data = JSON.parse($(this).closest(".tile").attr("data"));
+		//if full screen toggle back to full view
+		if("fullscreen" in dictQueryString && JSON.parse(dictQueryString["fullscreen"])) {
+			window.location.href = window.location.href.split('?')[0];
+		}
+		else{
+			window.location.href = window.location.href.split('?')[0] +  `?printer=${data.index}&fullscreen=1`;
+		}
+	});
+}
 
