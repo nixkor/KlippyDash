@@ -2,11 +2,9 @@
 KlippyDash
 https://github.com/nixkor/KlippyDash 
 */
-var _serverInfo = new Array();
-var _printerInfo = new Array();
-var _printerObjects = new Array();
 var _ajaxTimeout = 10 * 1000;
 var _printers;
+var _printerState = new Array();
 
 const PrintStatsState = {
 	Printing: "printing",
@@ -32,6 +30,47 @@ const HtmlCode = {
 	Refresh:"<i class='fa fa-refresh icon' />"
 };
 
+function updatePrinterObjects(index, data) { 
+	var currentState = _printerState[index];
+	if(typeof(currentState) !== "undefined" && typeof(currentState.objects) !== "undefined") {
+		if(currentState.objects.status.print_stats.state != PrintStatsState.Complete && data.status.print_stats.state == PrintStatsState.Complete) {
+			party.On();
+		}
+	}
+	
+	if(typeof(currentState) == "undefined")
+		_printerState[index] = {};
+
+	_printerState[index].objects = data;
+	processState(index);
+}
+
+function updatePrinterInfo(index, data) {
+	var currentState = _printerState[index];
+	if(typeof(currentState) !== "undefined"  && typeof(currentState.printer) !== "undefined") {
+
+	}
+
+	if(typeof(currentState) == "undefined")
+		_printerState[index] = {};
+
+	_printerState[index].printer = data;
+	processState(index);
+}
+
+function updateServerInfo(index, data) {
+	var currentState = _printerState[index];
+	if(typeof(currentState) !== "undefined"  && typeof(currentState.server !== "undefined")) {
+
+	}
+
+	if(typeof(currentState) == "undefined")
+		_printerState[index] = {};
+
+	_printerState[index].server = data;
+	processState(index);
+}
+
 function getPrinterObjects(printer, index) {
 	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
 
@@ -41,9 +80,8 @@ function getPrinterObjects(printer, index) {
 		contentType: 'application/json',
 		timeout: _ajaxTimeout,
 		success:function(data) 
-		{ 
-			_printerObjects[index] = data.result.status;
-			processStatus(printer, index);
+		{
+			updatePrinterObjects(index, data.result);
 		},
 		error:function(err)
 		{
@@ -63,8 +101,7 @@ function getPrinterInfo(printer, index) {
 		timeout: _ajaxTimeout,
 		success:function(data) 
 		{ 
-			_printerInfo[index] = data.result;
-			processStatus(printer, index);
+			updatePrinterInfo(index, data.result);
 		},
 		error:function(err)
 		{
@@ -83,8 +120,7 @@ function getServerInfo(printer, index) {
 		contentType: 'application/json',
 		timeout: _ajaxTimeout,
 		success: function(data) { 
-			_serverInfo[index] = data.result;
-			processStatus(printer, index);
+			updateServerInfo(index, data.result);
 		},
 		error: function(err) { 
 			showError(index, `Error connecting to ${printer.name}`,false);
@@ -93,21 +129,19 @@ function getServerInfo(printer, index) {
 	});
 }
 
-function processStatus(printer, index) {
-	//do sanity checks
-	if (typeof(_serverInfo[index]) == "undefined") 
-		return;
+function processState(index) {
+	//sanity check all data is populated
+	if(typeof(_printerState[index]) === "undefined" 
+		|| typeof(_printerState[index].objects) === "undefined"
+		|| typeof(_printerState[index].printer) === "undefined"
+		|| typeof(_printerState[index].server) === "undefined")
+			return;
 
-	if (typeof(_printerObjects[index]) == "undefined") 
-		return;		
+	var server = _printerState[index].server;
+	var printer = _printerState[index].printer;
+	var objects = _printerState[index].objects.status;
+
 		
-	if (typeof(_printerInfo[index]) == "undefined") 
-		return;				
-		
-	var si = _serverInfo[index];
-	var pi = _printerInfo[index];
-	var po = _printerObjects[index];
-	
 	//process data
 	$(`#tile${index}>.section-time`).text(Date().toString());
 
@@ -115,29 +149,29 @@ function processStatus(printer, index) {
 	setControls(index,"idle");
 	
 	//check connections and show warnings / errors
-	if(!si.klippy_connected) {
+	if(!server.klippy_connected) {
 		showError(index, "Klippy not connected!");
 		setProgressBar(index, 1, PrintStatsState.Error);
 		return;
 	}
 	
-	if(pi.state == 'error' || pi.state == 'shutdown') {   //!= "ready"
-		showError(index, pi.state_message);
+	if(printer.state == 'error' || printer.state == 'shutdown') {   //!= "ready"
+		showError(index, printer.state_message);
 		setProgressBar(index, 1, PrintStatsState.Error);
 		return;
 	}
 	
-	if(si.klippy_state != 'ready') {
-		showError(index, "Klippy State:" + si.klippy_state);
+	if(server.klippy_state != 'ready') {
+		showError(index, "Klippy State:" + server.klippy_state);
 	}
 
-	setProgressBar(index, po.display_status.progress, po.print_stats.state);
+	setProgressBar(index, objects.display_status.progress, objects.print_stats.state);
 	
 	//extruder temps
 	var divExtruder =  $(`#tile${index}>.section-extruder`);
-	if(po.extruder.target > 0 || po.extruder.temperature > 30) {
-		divExtruder.find(".extruder-temp").text(po.extruder.temperature.toFixed(1));
-		divExtruder.find(".extruder-target").text(po.extruder.target);
+	if(objects.extruder.target > 0 || objects.extruder.temperature > 30) {
+		divExtruder.find(".extruder-temp").text(objects.extruder.temperature.toFixed(1));
+		divExtruder.find(".extruder-target").text(objects.extruder.target);
 		divExtruder.removeClass("hidden");
 	}
 	else {
@@ -146,9 +180,9 @@ function processStatus(printer, index) {
 	
 	//bed temps
 	var divHeaterBed = $(`#tile${index}>.section-bed`);
-	if(po.heater_bed.target > 0 || po.heater_bed.temperature > 30) {
-		divHeaterBed.find(".bed-temp").text(po.heater_bed.temperature.toFixed(1));
-		divHeaterBed.find(".bed-target").text(po.heater_bed.target);
+	if(objects.heater_bed.target > 0 || objects.heater_bed.temperature > 30) {
+		divHeaterBed.find(".bed-temp").text(objects.heater_bed.temperature.toFixed(1));
+		divHeaterBed.find(".bed-target").text(objects.heater_bed.target);
 		divHeaterBed.removeClass("hidden");
 	}
 	else {
@@ -157,8 +191,8 @@ function processStatus(printer, index) {
 	
 	//filename
 	var divFile = $(`#tile${index}>.section-file`);
-	if(po.print_stats.state == "printing" || po.print_stats.state == "paused" || po.print_stats.state =="complete" || po.print_stats.state == "cancelled") {
-		divFile.find(".filename").text(po.print_stats.filename);
+	if(objects.print_stats.state == "printing" || objects.print_stats.state == "paused" || objects.print_stats.state =="complete" || objects.print_stats.state == "cancelled") {
+		divFile.find(".filename").text(objects.print_stats.filename);
 		divFile.removeClass("hidden");
 	}
 	else {
@@ -167,14 +201,14 @@ function processStatus(printer, index) {
 	
 	//print stats
 	var divPrintStats =$(`#tile${index}>.section-printstats`);
-	if(po.print_stats.state == "printing" || po.print_stats.state == "paused" || po.print_stats.state == "complete") {
-			divPrintStats.find(".total-time").html(formatTime(po.print_stats.total_duration));
-			divPrintStats.find(".print-time").html(formatTime(po.print_stats.print_duration));
-			divPrintStats.find(".filament-used").text((po.print_stats.filament_used/1000).toFixed(2));	
+	if(objects.print_stats.state == "printing" || objects.print_stats.state == "paused" || objects.print_stats.state == "complete") {
+			divPrintStats.find(".total-time").html(formatTime(objects.print_stats.total_duration));
+			divPrintStats.find(".print-time").html(formatTime(objects.print_stats.print_duration));
+			divPrintStats.find(".filament-used").text((objects.print_stats.filament_used/1000).toFixed(2));	
 			
-			if(po.display_status.progress > 0 && po.print_stats.state != "complete") { //printing or paused
-				var estimatedTotalTime = (po.print_stats.print_duration / po.display_status.progress);
-				var remainingTime = estimatedTotalTime - po.print_stats.print_duration;
+			if(objects.display_status.progress > 0 && objects.print_stats.state != "complete") { //printing or paused
+				var estimatedTotalTime = (objects.print_stats.print_duration / objects.display_status.progress);
+				var remainingTime = estimatedTotalTime - objects.print_stats.print_duration;
 				divPrintStats.find(".remaining-time").html(formatTime(remainingTime));
 				
 				var endTime = new Date();
@@ -186,9 +220,9 @@ function processStatus(printer, index) {
 					divPrintStats.find(".eta-time").text(endTime.toLocaleString());
 				}
 				divPrintStats.find(".printing-container").removeClass("hidden");
-				setControls(index, po.print_stats.state);			
+				setControls(index, objects.print_stats.state);			
 			}
-			else if(po.display_status.progress > 0) { //complete
+			else if(objects.display_status.progress > 0) { //complete
 				divPrintStats.find(".printing-container").addClass("hidden");
 
 				setControls(index,"complete");
@@ -203,7 +237,7 @@ function processStatus(printer, index) {
 			
 			divPrintStats.removeClass("hidden");
 	}
-	else if(po.print_stats.state == "cancelled") { //cancelled
+	else if(objects.print_stats.state == "cancelled") { //cancelled
 		setControls(index, "cancelled");
 	}
 	else { //idle
@@ -212,10 +246,11 @@ function processStatus(printer, index) {
 	}
 		
 	//errors
-	if(po.print_stats.state == "error") {
-		showError(index,`Error: ${po.print_stats.message}`);
+	if(objects.print_stats.state == "error") {
+		showError(index,`Error: ${objects.print_stats.message}`);
 		setProgressBar(index, 1, PrintStatsState.Error);
 	}
+
 }
 
 function setControls(index, state) {
@@ -260,7 +295,7 @@ function setControls(index, state) {
 }
 
 function setControlVisibility(index, name, visible) {
-	var ctrl = getControl(index,name);
+	var ctrl = getTileControl(index,name);
 	if(typeof(ctrl) != "undefined" && ctrl.length>0) {
 		if(visible){
 			ctrl.removeClass("hidden");
@@ -271,7 +306,7 @@ function setControlVisibility(index, name, visible) {
 	}
 }
 
-function getControl(index, name) {
+function getTileControl(index, name) {
 	return $(`#tile${index}>.title-container>.control-wrap>.control-${name}`);
 }
 
@@ -390,14 +425,14 @@ function showError(index, message, alert = true) {
 	}
 }
 
-function updatePrinterInfo(printer,index) {
+function updatePrinterData(printer,index) {
 	getPrinterInfo(printer,index);
 	getPrinterObjects(printer, index);
 	getServerInfo(printer,index);
 }
 
 function updatePrinter(printer, index) {
-	updatePrinterInfo(printer, index);
+	updatePrinterData(printer, index);
 	updateCamera(printer,index);
 }
 
@@ -436,21 +471,12 @@ function refreshTitle() {
 	if($("body").hasClass("alert"))
 		title = "!!!ALERT!!!"
 	else {
-
-		// 	var si = _serverInfo[index];
-		// 	var pi = _printerInfo[index];
-		// 	var po = _printerObjects[index];
-		
-		if(_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Printing).length > 0) {
+		if(_printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).length > 0) {
 			if(title.length > 0) title += " ";
-			var p = _printerObjects.filter(po => po.print_stats.state == PrintStatsState.Printing).sort((a,b) =>  calculateRemainingTime(a.print_stats.print_duration, a.display_status.progress) - calculateRemainingTime(b.print_stats.print_duration, b.display_status.progress))[0];
+			var p = _printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).sort((a,b) =>  calculateRemainingTime(a.objects.status.print_stats.print_duration, a.objects.status.display_status.progress) - calculateRemainingTime(b.objects.status.print_stats.print_duration, b.objects.status.display_status.progress))[0];
 
-			title += `Printing: ${_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Printing).length}; ETA: ${calculateEta(calculateRemainingTime(p.print_stats.print_duration, p.display_status.progress))}`;
+			title += `Printing: ${_printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).length}; ETA: ${calculateEta(calculateRemainingTime(p.objects.status.print_stats.print_duration, p.objects.status.display_status.progress))}`;			
 		}
-		// if(_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Standby).length > 0) {
-		// 	if(title.length > 0) title += " ";
-		// 	title += `Idle: ${_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Standby).length}`;
-		// }
 	}
 	if(title.length > 0) title += " - ";
 	title = title += "KlippyDash";
