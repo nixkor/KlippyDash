@@ -8,14 +8,28 @@ var _printerObjects = new Array();
 var _ajaxTimeout = 10 * 1000;
 var _printers;
 
+const PrintStatsState = {
+	Printing: "printing",
+	Paused: "paused",
+	Complete: "complete",
+	Cancelled: "cancelled",
+	Error: "error",
+	Standby: "standby"
+};
 
-const _htmlCode = {  //trying to implement some form of typing status to remove unwanted classes - may be a better way
-	"celsius":"&#8451;", 
-	"octagon":"<i class='fa fa-exclamation-triangle icon' />",
-	"play":"<i class='fa fa-play icon' />",
-	"stop":"<i class='fa fa-stop icon' />",
-	"pause":"<i class='fa fa-pause icon' />",
-	"refresh":"<i class='fa fa-refresh icon' />"
+const PrintInfoState = {
+	Ready: "ready",
+	Error: "error",
+	Shutdown: "shutdown"
+};
+
+const HtmlCode = {
+	Celsius:"&#8451;", 
+	Octagon:"<i class='fa fa-exclamation-triangle icon' />",
+	Play:"<i class='fa fa-play icon' />",
+	Stop:"<i class='fa fa-stop icon' />",
+	Pause:"<i class='fa fa-pause icon' />",
+	Refresh:"<i class='fa fa-refresh icon' />"
 };
 
 function getPrinterObjects(printer, index) {
@@ -34,7 +48,7 @@ function getPrinterObjects(printer, index) {
 		error:function(err)
 		{
 			showError(index, `Error connecting to ${printer.name}`, false);
-			setProgressBar(index,1,"error")
+			setProgressBar(index, 1, PrintStatsState.Error)
 		}
 	});
 }
@@ -55,7 +69,7 @@ function getPrinterInfo(printer, index) {
 		error:function(err)
 		{
 			showError(index, `Error connecting to ${printer.name}`, false);
-			setProgressBar(index,1,"error")
+			setProgressBar(index, 1, PrintStatsState.Error)
 		}
 	});
 }
@@ -74,7 +88,7 @@ function getServerInfo(printer, index) {
 		},
 		error: function(err) { 
 			showError(index, `Error connecting to ${printer.name}`,false);
-			setProgressBar(index,1,"error")
+			setProgressBar(index, 1, PrintStatsState.Error)
 		}
 	});
 }
@@ -103,13 +117,13 @@ function processStatus(printer, index) {
 	//check connections and show warnings / errors
 	if(!si.klippy_connected) {
 		showError(index, "Klippy not connected!");
-		setProgressBar(index,1,"error")
+		setProgressBar(index, 1, PrintStatsState.Error);
 		return;
 	}
 	
 	if(pi.state == 'error' || pi.state == 'shutdown') {   //!= "ready"
 		showError(index, pi.state_message);
-		setProgressBar(index,1,"error")
+		setProgressBar(index, 1, PrintStatsState.Error);
 		return;
 	}
 	
@@ -200,7 +214,7 @@ function processStatus(printer, index) {
 	//errors
 	if(po.print_stats.state == "error") {
 		showError(index,`Error: ${po.print_stats.message}`);
-		setProgressBar(index,1,"error")
+		setProgressBar(index, 1, PrintStatsState.Error);
 	}
 }
 
@@ -395,11 +409,52 @@ function updateCamera(printer, index) {
 	}
 }
 
+function calculateRemainingTime(duration, progress) {
+	if(progress > 0)  //dont divide by 0
+	{
+		var estTotalTime = (duration / progress);
+		return estTotalTime - duration;
+	}
+	return undefined; 
+}
+
+function calculateEta(remainingTime) {
+	if(typeof(remainingTime) === "undefined") return "Calculating..."
+
+	var endTime = new Date();
+	endTime = new Date(endTime.getTime() + (remainingTime * 1000));
+	if(endTime.day == (new Date()).day) { //if same day only show time
+		return endTime.toLocaleTimeString();
+	}
+	else {
+		return endTime.toLocaleString();
+	}
+}
+
 function refreshTitle() {
+	var title = "";
 	if($("body").hasClass("alert"))
-		document.title = "!!! ALERT !!! KlippyDash";
-	else 
-		document.title = "KlippyDash";
+		title = "!!!ALERT!!!"
+	else {
+
+		// 	var si = _serverInfo[index];
+		// 	var pi = _printerInfo[index];
+		// 	var po = _printerObjects[index];
+		
+		if(_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Printing).length > 0) {
+			if(title.length > 0) title += " ";
+			var p = _printerObjects.filter(po => po.print_stats.state == PrintStatsState.Printing).sort((a,b) =>  calculateRemainingTime(a.print_stats.print_duration, a.display_status.progress) - calculateRemainingTime(b.print_stats.print_duration, b.display_status.progress))[0];
+
+			title += `Printing: ${_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Printing).length}; ETA: ${calculateEta(calculateRemainingTime(p.print_stats.print_duration, p.display_status.progress))}`;
+		}
+		// if(_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Standby).length > 0) {
+		// 	if(title.length > 0) title += " ";
+		// 	title += `Idle: ${_printerObjects.filter(po => po.print_stats.state == PrintStatsState.Standby).length}`;
+		// }
+	}
+	if(title.length > 0) title += " - ";
+	title = title += "KlippyDash";
+	document.title = title;
 }
 
 function updateAll() {
@@ -422,7 +477,7 @@ function setProgressBar(index, percent, state, message = undefined) {
 	var bonusClass = undefined;
 	
 	switch(state) {
-		case "printing":
+		case PrintStatsState.Printing:
 			if (typeof(message) == "undefined") message = `Printing - ${percent.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, maximumFractionDigits:0})}`;	
 			bonusClass = statusDict["printing"].status;
 			break;
@@ -473,11 +528,10 @@ function setProgressBar(index, percent, state, message = undefined) {
 	}
 	else {
 		bar.find(".progress-bar-progress").attr("style",`width:${percent.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, maximumFractionDigits:0})}`).removeClass("hidden");  //if showing bar make sure to set appropriately!
-		//bar.find(".progress-bar-progress").addClass("hidden");
 	}
 	
 	//animate bar if printing
-	if(state=="printing") 
+	if(state == PrintStatsState.Printing) 
 		bar.addClass("animated");
 	else
 		bar.removeClass("animated");
@@ -511,31 +565,31 @@ function createTiles() {
 							.attr("class","control-resume hidden")
 							.attr("title","Resume")
 							.attr("data",JSON.stringify(data))
-							.html(_htmlCode["play"])
+							.html(HtmlCode.Play)
 						)
 						.append($("<span>")
 							.attr("class","control-pause hidden")
 							.attr("title","Pause")
 							.attr("data",JSON.stringify(data))
-							.html(_htmlCode["pause"])
+							.html(HtmlCode.Pause)
 						)						
 						.append($("<span>")
 							.attr("class","control-cancel hidden")
 							.attr("title","Cancel")
 							.attr("data",JSON.stringify(data))
-							.html(_htmlCode["stop"])
+							.html(HtmlCode.Stop)
 						)
 						.append($("<span>")
 							.attr("class","control-clear hidden")
 							.attr("title","Clear")
 							.attr("data",JSON.stringify(data))
-							.html(_htmlCode["refresh"])
+							.html(HtmlCode.Refresh)
 						)																		
 						.append($("<span>")
 							.attr("class","control-e-stop hidden")
 							.attr("title","E-Stop")
 							.attr("data",JSON.stringify(data))
-							.html(_htmlCode["octagon"])
+							.html(HtmlCode.Octagon)
 						)
 					)
 				)
@@ -623,7 +677,7 @@ function createTiles() {
 					.append($("<span>")
 						.attr("class","extruder-target dynamic-value")
 					)
-					.append($("<sup>").html(_htmlCode["celsius"]))
+					.append($("<sup>").html(HtmlCode.Celsius))
 				)
 				.append($("<div>")
 					.attr("class","section-bed tile-line hidden")
@@ -635,7 +689,7 @@ function createTiles() {
 					.append($("<span>")
 						.attr("class","bed-target dynamic-value")
 					)
-					.append($("<sup>").html(_htmlCode["celsius"]))
+					.append($("<sup>").html(HtmlCode.Celsius))
 				)		
 				.append($("<div>") //error
 						.attr("class","section-error hidden")
@@ -645,7 +699,6 @@ function createTiles() {
 				)
 			)
 	});
-
 
 	//add error popups
 	canvas.append($("<div>")
