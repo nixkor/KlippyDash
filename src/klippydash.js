@@ -30,11 +30,22 @@ const HtmlCode = {
 	Refresh:"<i class='fa fa-refresh icon' />"
 };
 
+const SvgIcon = {
+	Flow:"M7,2H17V7H19V13H16.5L13,17H11L7.5,13H5V7H7V2M10,22H2V20H10A1,1 0 0,0 11,19V18H13V19A3,3 0 0,1 10,22M7,9V11H8.5L12,15L15.5,11H17V9H15V4H9V9H7Z",
+	Speed:"M12,16A3,3 0 0,1 9,13C9,11.88 9.61,10.9 10.5,10.39L20.21,4.77L14.68,14.35C14.18,15.33 13.17,16 12,16M12,3C13.81,3 15.5,3.5 16.97,4.32L14.87,5.53C14,5.19 13,5 12,5A8,8 0 0,0 4,13C4,15.21 4.89,17.21 6.34,18.65H6.35C6.74,19.04 6.74,19.67 6.35,20.06C5.96,20.45 5.32,20.45 4.93,20.07V20.07C3.12,18.26 2,15.76 2,13A10,10 0 0,1 12,3M22,13C22,15.76 20.88,18.26 19.07,20.07V20.07C18.68,20.45 18.05,20.45 17.66,20.06C17.27,19.67 17.27,19.04 17.66,18.65V18.65C19.11,17.2 20,15.21 20,13C20,12 19.81,11 19.46,10.1L20.67,8C21.5,9.5 22,11.18 22,13Z",
+	Offset:"M12,18.54L19.37,12.8L21,14.07L12,21.07L3,14.07L4.62,12.81L12,18.54M12,16L3,9L12,2L21,9L12,16M12,4.53L6.26,9L12,13.47L17.74,9L12,4.53Z",
+}
+
+const Sounds = {
+	Success:"audio/success.mp3",
+}
+
 function updatePrinterObjects(index, data) { 
 	var currentState = _printerState[index];
 	if(typeof(currentState) !== "undefined" && typeof(currentState.objects) !== "undefined") {
 		if(currentState.objects.status.print_stats.state != PrintStatsState.Complete && data.status.print_stats.state == PrintStatsState.Complete) {
 			party.On();
+			soundTest();
 		}
 	}
 	
@@ -169,10 +180,40 @@ function processState(index) {
 	
 	//extruder temps
 	var divExtruder =  $(`#tile${index}>.section-extruder`);
-	if(objects.extruder.target > 0 || objects.extruder.temperature > 30) {
+	if(objects.extruder.target > 0 || objects.extruder.temperature > 30 || objects.gcode_move.extrude_factor != 1.0 || objects.gcode_move.speed_factor != 1.0) {
 		divExtruder.find(".extruder-temp").text(objects.extruder.temperature.toFixed(1));
 		divExtruder.find(".extruder-target").text(objects.extruder.target);
 		divExtruder.removeClass("hidden");
+
+		//extruder flow
+		var divExtruderFlow = divExtruder.find(".section-extruder-flow");
+		if(objects.gcode_move.extrude_factor != 1.0) {
+			divExtruderFlow.find(".extruder-flow").text(objects.gcode_move.extrude_factor * 100);
+			divExtruderFlow.removeClass("hidden");
+		}
+		else {
+			divExtruderFlow.addClass("hidden");
+		}
+
+		//speed factor
+		var divSpeedFactor = divExtruder.find(".section-speed-factor");
+		if(objects.gcode_move.speed_factor != 1.0) {
+			divSpeedFactor.find(".speed-factor").text(objects.gcode_move.speed_factor * 100);
+			divSpeedFactor.removeClass("hidden");
+		}
+		else {
+			divSpeedFactor.addClass("hidden");
+		}
+
+		//zoffset
+		var divZOffset = divExtruder.find(".section-z-offset");
+		if(objects.gcode_move.homing_origin[2] != 0.0) {
+			divZOffset.find(".z-offset").text(objects.gcode_move.homing_origin[2].toFixed(3));
+			divZOffset.removeClass("hidden");
+		}
+		else {
+			divZOffset.addClass("hidden");
+		}
 	}
 	else {
 		divExtruder.addClass("hidden");
@@ -635,7 +676,7 @@ function createTiles() {
 							.attr("id","progressbar-text").attr("class","progress-bar-text")						
 						)						
 					)
-				)
+				)				
 				.append($("<div>")
 					.attr("class","section-file tile-line hidden")
 					.append($("<span>").attr("class","label").append("File Name: "))
@@ -704,6 +745,33 @@ function createTiles() {
 						.attr("class","extruder-target dynamic-value")
 					)
 					.append($("<sup>").html(HtmlCode.Celsius))
+					.append($("<span>")
+						.attr("class","section-extruder-flow")
+						.attr("title","Flow")
+						.append($("<span>").attr("class","label").append(showSvgIcon(SvgIcon.Flow)))
+						.append($("<span>")
+							.attr("class","extruder-flow dynamic-value")
+						)
+						.append("%")
+					)
+					.append($("<span>")
+						.attr("class","section-speed-factor")
+						.attr("title","Speed Factor")
+						.append($("<span>").attr("class","label").append(showSvgIcon(SvgIcon.Speed)))
+						.append($("<span>")
+							.attr("class","speed-factor dynamic-value")
+						)
+						.append("%")
+					)
+					.append($("<span>")
+						.attr("class","section-z-offset")
+						.attr("title","Z-Offset")
+						.append($("<span>").attr("class","label").append(showSvgIcon(SvgIcon.Offset)))
+						.append($("<span>")
+							.attr("class","z-offset dynamic-value")
+						)
+						.append("mm")
+					)					
 				)
 				.append($("<div>")
 					.attr("class","section-bed tile-line hidden")
@@ -737,6 +805,14 @@ function createTiles() {
 
 	//add footer
 	canvas.append($("<div>").attr("class","footer").html("<a href='https://github.com/nixkor/KlippyDash'>KlippyDash</a> - a lightweight Klipper dashboard."));
+}
+
+function showSvgIcon(icon) {
+	htmlCode = "";
+	if(icon.length > 0) {
+		htmlCode = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true" class="icon-svg" style=""><path d="${icon}"></path></svg>`;
+	}
+	return htmlCode;
 }
 
 //filter printers based on querystring
@@ -867,7 +943,21 @@ var party = {
 $().ready(() => {	
 	setup();
 	updateAll();
+//	soundTest();
 });
+
+function soundTest() {
+	var audio = new Audio(Sounds.Success);
+	var promise = audio.play();
+	if (promise !== undefined) {
+        promise.then(_ => {
+            // Autoplay started!
+        }).catch(error => {
+            // Autoplay was prevented. Show a "Play" button so that user can start playback.
+        });
+    }
+
+}
 
 function bindHandlers() {
 	$(".control-e-stop").click(function(e) {
