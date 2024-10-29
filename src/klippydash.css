@@ -719,3 +719,20 @@ a:hover {
 	*/
 }
 
+.section-extruder-flow, .section-speed-factor, .section-z-offset {
+	padding-left: 20px;
+}
+
+.section-extruder-flow .dynamic-value, .section-speed-factor .dynamic-value, .section-z-offset .dynamic-value  {
+	color: var(--color-warning);
+}
+
+.icon-svg {
+	--icon-size: 1.1em;
+	font-size: var(--icon-size);
+	height: var(--icon-size);
+	width: var(--icon-size);
+	fill: currentColor;
+	vertical-align: top;
+	padding-right:3px;
+}
