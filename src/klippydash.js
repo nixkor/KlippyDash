@@ -208,7 +208,12 @@ function processState(index) {
 		//zoffset
 		var divZOffset = divExtruder.find(".section-z-offset");
 		if(objects.gcode_move.homing_origin[2] != 0.0) {
-			divZOffset.find(".z-offset").text(objects.gcode_move.homing_origin[2].toFixed(3));
+			var displayText = "";
+			if(objects.gcode_move.homing_origin[2]  > 0) {
+				displayText += "+";
+			}
+			displayText += objects.gcode_move.homing_origin[2].toFixed(3);
+			divZOffset.find(".z-offset").text(displayText);
 			divZOffset.removeClass("hidden");
 		}
 		else {
