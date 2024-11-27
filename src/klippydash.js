@@ -45,7 +45,7 @@ function updatePrinterObjects(index, data) {
 	if(typeof(currentState) !== "undefined" && typeof(currentState.objects) !== "undefined") {
 		if(currentState.objects.status.print_stats.state != PrintStatsState.Complete && data.status.print_stats.state == PrintStatsState.Complete) {
 			party.On();
-			soundTest();
+			playAudio(Sounds.Success);
 		}
 	}
 	
@@ -948,17 +948,16 @@ var party = {
 $().ready(() => {	
 	setup();
 	updateAll();
-//	soundTest();
 });
 
-function soundTest() {
-	var audio = new Audio(Sounds.Success);
+function playAudio(sound) {
+	var audio = new Audio(sound);
 	var promise = audio.play();
 	if (promise !== undefined) {
         promise.then(_ => {
-            // Autoplay started!
+			//shouldnt need to do anything.
         }).catch(error => {
-            // Autoplay was prevented. Show a "Play" button so that user can start playback.
+            //todo: look into making this more graceful
         });
     }
 
