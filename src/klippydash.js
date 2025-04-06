@@ -42,16 +42,20 @@ const Sounds = {
 
 function updatePrinterObjects(index, data) { 
 	var currentState = _printerState[index];
+
+	if(typeof(currentState) == "undefined")
+		_printerState[index] = {};	
+
+	//check if status flipped from printing to complete.  If so play success sound.
 	if(typeof(currentState) !== "undefined" && typeof(currentState.objects) !== "undefined") {
-		if(currentState.objects.status.print_stats.state != PrintStatsState.Complete && data.status.print_stats.state == PrintStatsState.Complete) {
+		if(currentState.objects.status.print_stats.state == PrintStatsState.Printing
+			&& data.status.print_stats.state == PrintStatsState.Complete) {
+			_printerState[index].LastCompletedTime = new Date();
 			party.On();
 			playAudio(Sounds.Success);
 		}
 	}
 	
-	if(typeof(currentState) == "undefined")
-		_printerState[index] = {};
-
 	_printerState[index].objects = data;
 	processState(index);
 }
@@ -270,6 +274,18 @@ function processState(index) {
 			}
 			else if(objects.display_status.progress > 0) { //complete
 				divPrintStats.find(".printing-container").addClass("hidden");
+
+				//if last completed time set display offset since complete
+				if(typeof(_printerState[index].LastCompletedTime) != "undefined") {
+					var completed = _printerState[index].LastCompletedTime;
+					var current = new Date();
+					var seconds = (current.getTime() - completed.getTime()) / 1000;
+					divPrintStats.find(".complete-time").html(" +" + formatTime(seconds));
+					divPrintStats.find(".complete-time").removeClass("hidden");
+				}
+				else {
+					divPrintStats.find(".complete-time").addClass("hidden");
+				}				
 
 				setControls(index,"complete");
 			}
@@ -521,7 +537,7 @@ function refreshTitle() {
 			if(title.length > 0) title += " ";
 			var p = _printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).sort((a,b) =>  calculateRemainingTime(a.objects.status.print_stats.print_duration, a.objects.status.display_status.progress) - calculateRemainingTime(b.objects.status.print_stats.print_duration, b.objects.status.display_status.progress))[0];
 
-			title += `Printing: ${_printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).length}; ETA: ${calculateEta(calculateRemainingTime(p.objects.status.print_stats.print_duration, p.objects.status.display_status.progress))}`;			
+			title += `${p.objects.status.display_status.progress.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, maximumFractionDigits:0})}; ETA: ${calculateEta(calculateRemainingTime(p.objects.status.print_stats.print_duration, p.objects.status.display_status.progress))}`;						
 		}
 	}
 	if(title.length > 0) title += " - ";
@@ -700,6 +716,7 @@ function createTiles() {
 							.append($("<span>")
 								.attr("class", "total-time")
 							)
+							.append($("<span>").attr("class", "complete-time"))
 						)
 						.append($("<span>")
 							.attr("class","printing-container tile-line")
@@ -957,7 +974,7 @@ function playAudio(sound) {
         promise.then(_ => {
 			//shouldnt need to do anything.
         }).catch(error => {
-            //todo: look into making this more graceful
+            //todo: look into making this more graceful, thrown when player not approved
         });
     }
 
