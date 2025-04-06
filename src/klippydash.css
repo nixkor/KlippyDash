@@ -726,6 +726,9 @@ a:hover {
 .section-extruder-flow .dynamic-value, .section-speed-factor .dynamic-value, .section-z-offset .dynamic-value  {
 	color: var(--color-warning);
 }
+.section-printstats .complete-time {
+	margin-left:10px;
+}
 
 .icon-svg {
 	--icon-size: 1.1em;
