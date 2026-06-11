@@ -739,3 +739,66 @@ a:hover {
 	vertical-align: top;
 	padding-right:4px;
 }
+
+/* confirmation dialog - native <dialog>, themed via --dialog-* variables */
+#confirmation-dialog {
+	width: 500px;
+	max-width: 90vw;
+	padding: 0;
+	border: 1px solid var(--dialog-border-color);
+	border-radius: 6px;
+	background: var(--dialog-bg-color);
+	color: var(--dialog-text-color);
+	font-family: 'Segoe UI', Arial, sans-serif;
+	font-size: 1.1em;
+}
+
+#confirmation-dialog::backdrop {
+	background: var(--dialog-overlay-color);
+	opacity: 0.8;
+}
+
+#confirmation-dialog .dialog-title {
+	padding: 10px 12px;
+	background: var(--dialog-title-bg-color);
+	color: var(--dialog-title-text-color);
+	border-bottom: 1px solid var(--dialog-title-border-color);
+	border-radius: 6px 6px 0 0;
+	font-weight: bold;
+}
+
+#confirmation-dialog .dialog-content {
+	padding: 16px 12px;
+	text-align: left;
+}
+
+#confirmation-dialog .dialog-buttons {
+	padding: 10px 12px 14px;
+	text-align: right;
+}
+
+#confirmation-dialog .dialog-buttons button {
+	margin-left: 8px;
+	padding: 6px 16px;
+	border: 1px solid var(--dialog-button-default-border-color);
+	border-radius: 6px;
+	background: var(--dialog-button-default-bg-color);
+	color: var(--dialog-button-default-text-color);
+	font-family: 'Segoe UI', Arial, sans-serif;
+	font-size: 1em;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+#confirmation-dialog .dialog-buttons button:hover,
+#confirmation-dialog .dialog-buttons button:focus {
+	border-color: var(--dialog-button-focus-border-color);
+	background: var(--dialog-button-focus-bg-color);
+	color: var(--dialog-button-focus-text-color);
+}
+
+#confirmation-dialog .dialog-buttons button:active {
+	border-color: var(--dialog-button-active-border-color);
+	background: var(--dialog-button-active-bg-color);
+	color: var(--dialog-button-active-text-color);
+}
