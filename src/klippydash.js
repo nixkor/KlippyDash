@@ -5,6 +5,8 @@ https://github.com/nixkor/KlippyDash
 var _ajaxTimeout = 10 * 1000;
 var _printers;
 var _printerState = new Array();
+var _refreshInterval = 1000;
+var _refreshTimer;
 
 const PrintStatsState = {
 	Printing: "printing",
@@ -75,9 +77,6 @@ function updatePrinterInfo(index, data) {
 
 function updateServerInfo(index, data) {
 	var currentState = _printerState[index];
-	if(typeof(currentState) !== "undefined"  && typeof(currentState.server !== "undefined")) {
-
-	}
 
 	if(typeof(currentState) == "undefined")
 		_printerState[index] = {};
@@ -89,7 +88,7 @@ function updateServerInfo(index, data) {
 function getPrinterObjects(printer, index) {
 	var endpoint = "/printer/objects/query?gcode_move&toolhead&extruder=temperature,target,power&heater_bed&print_stats&display_status&bed_mesh=mesh_min,mesh_max,probed_matrix";
 
-	$.ajax({
+	return $.ajax({
 		url: printer.host + endpoint,
 		type: 'GET',
 		contentType: 'application/json',
@@ -109,7 +108,7 @@ function getPrinterObjects(printer, index) {
 function getPrinterInfo(printer, index) {
 	var endpoint = "/printer/info";
 
-	$.ajax({
+	return $.ajax({
 		url: printer.host + endpoint,
 		type: 'GET',
 		contentType: 'application/json',
@@ -128,8 +127,8 @@ function getPrinterInfo(printer, index) {
 
 function getServerInfo(printer, index) { 
 	var endpoint = "/server/info";
-	
-	$.ajax({
+
+	return $.ajax({
 		url: printer.host + endpoint,
 		type: 'GET',
 		contentType: 'application/json',
@@ -263,7 +262,7 @@ function processState(index) {
 				
 				var endTime = new Date();
 				endTime = new Date(endTime.getTime() + (remainingTime * 1000));
-				if(endTime.day == (new Date()).day) {
+				if(isSameDay(endTime, new Date())) {
 					divPrintStats.find(".eta-time").text(endTime.toLocaleTimeString());
 				}
 				else {
@@ -488,14 +487,18 @@ function showError(index, message, alert = true) {
 }
 
 function updatePrinterData(printer,index) {
-	getPrinterInfo(printer,index);
-	getPrinterObjects(printer, index);
-	getServerInfo(printer,index);
+	//return the in-flight request handles so the caller can wait for them to settle before scheduling the next tick
+	return [
+		getPrinterInfo(printer,index),
+		getPrinterObjects(printer, index),
+		getServerInfo(printer,index)
+	];
 }
 
 function updatePrinter(printer, index) {
-	updatePrinterData(printer, index);
+	var pending = updatePrinterData(printer, index);
 	updateCamera(printer,index);
+	return pending;
 }
 
 function updateCamera(printer, index) {
@@ -515,12 +518,20 @@ function calculateRemainingTime(duration, progress) {
 	return undefined; 
 }
 
+//Date has no .day property (it's getDate()/getDay()), so the old endTime.day checks compared undefined==undefined.
+//Compare the actual calendar date so "same day" shows just the time and other days show the full date.
+function isSameDay(a, b) {
+	return a.getFullYear() === b.getFullYear()
+		&& a.getMonth() === b.getMonth()
+		&& a.getDate() === b.getDate();
+}
+
 function calculateEta(remainingTime) {
 	if(typeof(remainingTime) === "undefined") return "Calculating..."
 
 	var endTime = new Date();
 	endTime = new Date(endTime.getTime() + (remainingTime * 1000));
-	if(endTime.day == (new Date()).day) { //if same day only show time
+	if(isSameDay(endTime, new Date())) { //if same day only show time
 		return endTime.toLocaleTimeString();
 	}
 	else {
@@ -533,9 +544,12 @@ function refreshTitle() {
 	if($("body").hasClass("alert"))
 		title = "!!!ALERT!!!"
 	else {
-		if(_printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).length > 0) {
+		//some printers may be only partially loaded (a /server/info response arrived but /objects/query hasn't yet),
+		//so guard every dereference - an undefined .objects here would otherwise throw and break the whole tick.
+		var printing = _printerState.filter(ps => ps?.objects?.status?.print_stats?.state === PrintStatsState.Printing);
+		if(printing.length > 0) {
 			if(title.length > 0) title += " ";
-			var p = _printerState.filter(ps => ps.objects.status.print_stats.state == PrintStatsState.Printing).sort((a,b) =>  calculateRemainingTime(a.objects.status.print_stats.print_duration, a.objects.status.display_status.progress) - calculateRemainingTime(b.objects.status.print_stats.print_duration, b.objects.status.display_status.progress))[0];
+			var p = printing.sort((a,b) =>  calculateRemainingTime(a.objects.status.print_stats.print_duration, a.objects.status.display_status.progress) - calculateRemainingTime(b.objects.status.print_stats.print_duration, b.objects.status.display_status.progress))[0];
 
 			title += `${p.objects.status.display_status.progress.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, maximumFractionDigits:0})}; ETA: ${calculateEta(calculateRemainingTime(p.objects.status.print_stats.print_duration, p.objects.status.display_status.progress))}`;						
 		}
@@ -546,11 +560,15 @@ function refreshTitle() {
 }
 
 function updateAll() {
+	var pending = [];
 	_printers.forEach(function(val, index, arr) {
-		updatePrinter(val, index);
+		pending = pending.concat(updatePrinter(val, index));
 	});
 
 	refreshTitle();
+
+	//resolve once every request this tick has settled (success or failure) so polling can't stack up on a slow/unreachable printer
+	return Promise.allSettled(pending);
 }
 
 function setProgressBar(index, percent, state, message = undefined) {
@@ -952,10 +970,16 @@ function setup() {
 		theme = dictQueryString["theme"];
 	document.documentElement.setAttribute("data-theme",theme);
 
-	var interval = 1000;
-	if(settings.refreshInterval > 0) interval = Number.parseInt(settings.refreshInterval);
-			
-	var timer = setInterval(function() { updateAll(); }, interval);	//This is the timer that refreshes the screen. 
+	if(settings.refreshInterval > 0) _refreshInterval = Number.parseInt(settings.refreshInterval);
+}
+
+//Schedule the next refresh _refreshInterval ms after the current one fully settles (recursive setTimeout instead of
+//setInterval). This guarantees only one set of requests is ever in flight per printer, so a slow or unreachable
+//printer (up to the 10s ajax timeout) can't stack up overlapping requests the way a fixed interval would.
+function scheduleNextUpdate() {
+	_refreshTimer = setTimeout(function() {
+		updateAll().then(scheduleNextUpdate);
+	}, _refreshInterval);
 }
 
 var party = {
@@ -977,7 +1001,7 @@ var party = {
 
 $(() => {
 	setup();
-	updateAll();
+	updateAll().then(scheduleNextUpdate);
 });
 
 function playAudio(sound) {
