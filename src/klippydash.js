@@ -211,7 +211,7 @@ function processState(index) {
 
 		//zoffset
 		var divZOffset = divExtruder.find(".section-z-offset");
-		if(objects.gcode_move.homing_origin[2] != 0.0) {
+		if(Math.abs(objects.gcode_move.homing_origin[2]) >= 0.001) { //prevent odd ui like +0.000 due to precision
 			var displayText = "";
 			if(objects.gcode_move.homing_origin[2]  > 0) {
 				displayText += "+";
@@ -269,6 +269,8 @@ function processState(index) {
 				else {
 					divPrintStats.find(".eta-time").text(endTime.toLocaleString());
 				}
+				divPrintStats.find(".complete-time").addClass("hidden"); 
+
 				divPrintStats.find(".printing-container").removeClass("hidden");
 				setControls(index, objects.print_stats.state);			
 			}
@@ -292,6 +294,8 @@ function processState(index) {
 			else{ //starting up
 				divPrintStats.find(".remaining-time").html("<span class='dynamic-value'>Calculating...</span>");
 				divPrintStats.find(".eta-time").text("Calculating...");
+
+				divPrintStats.find(".complete-time").addClass("hidden"); 
 
 				divPrintStats.find(".printing-container").removeClass("hidden");
 				setControls(index, "printing");
@@ -1036,6 +1040,25 @@ function bindHandlers() {
 				alert(`failure! ${err}`);
 			}
 		});
+	});
+
+	//flip x/y image functionality
+	$("img.cam").each(function () {
+		var data = JSON.parse($(this).attr("data"));		
+		if(_printers[data.index].flip_x) {
+			$(this).addClass("flipx")
+	
+		}
+		else {
+			$(this).removeClass("flipx")
+		}
+
+		if(_printers[data.index].flip_y) {
+			$(this).addClass("flipy")
+		}		
+		else {
+			$(this).removeClass("flipy")
+		}
 	});
 
 	//set inital to snapshot
