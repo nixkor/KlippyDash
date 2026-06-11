@@ -22,12 +22,12 @@ const PrintInfoState = {
 };
 
 const HtmlCode = {
-	Celsius:"&#8451;", 
-	Octagon:"<i class='fa fa-exclamation-triangle icon' />",
-	Play:"<i class='fa fa-play icon' />",
-	Stop:"<i class='fa fa-stop icon' />",
-	Pause:"<i class='fa fa-pause icon' />",
-	Refresh:"<i class='fa fa-refresh icon' />"
+	Celsius:"&#8451;",
+	Octagon:"<i class='fa-solid fa-triangle-exclamation icon'></i>",
+	Play:"<i class='fa-solid fa-play icon'></i>",
+	Stop:"<i class='fa-solid fa-stop icon'></i>",
+	Pause:"<i class='fa-solid fa-pause icon'></i>",
+	Refresh:"<i class='fa-solid fa-arrows-rotate icon'></i>"
 };
 
 const SvgIcon = {
@@ -816,12 +816,21 @@ function createTiles() {
 			)
 	});
 
-	//add error popups
-	canvas.append($("<div>")
+	//add confirmation dialog (native <dialog> element)
+	canvas.append($("<dialog>")
 		.attr("id","confirmation-dialog")
-		.attr("title","Are you sure?")
-		.append($("<span>")
-			.attr("class","message")
+		.append($("<div>")
+			.attr("class","dialog-title")
+			.append($("<span>").attr("class","title-text").append("Are you sure?"))
+		)
+		.append($("<div>")
+			.attr("class","dialog-content")
+			.append($("<span>").attr("class","message"))
+		)
+		.append($("<div>")
+			.attr("class","dialog-buttons")
+			.append($("<button>").attr("type","button").attr("class","dialog-no").append("No"))
+			.append($("<button>").attr("type","button").attr("class","dialog-yes").append("Yes"))
 		)
 	);
 
@@ -888,38 +897,42 @@ function parseQueryString() {
 }
 
 function showConfirmation(title, htmlMessage, endpoint) {
-	$("#confirmation-dialog").attr("title",title);
-	$("#confirmation-dialog>.message").html(htmlMessage);
-	$("#confirmation-dialog").dialog({
-		modal: true,
-		autoOpen: true,
-		width: 500,
-		resizable: false,
-		draggable:false,
-		buttons: {
-			"Yes" : function() { 
-				$.ajax({
-					url: endpoint,
-					type: 'POST',
-					contentType: 'application/json',
-					timeout: _ajaxTimeout,
-					error: function(err) { 
-						alert(`failure! ${err}`);
-					}
-				});
-				$(this).dialog("close"); 
-			},
-			"No" : function() { 
-				$(this).dialog("close"); 
-			} 
-		},
+	var dialog = document.getElementById("confirmation-dialog");
+
+	$(dialog).find(".title-text").text(title);
+	$(dialog).find(".message").html(htmlMessage);
+
+	//rebind handlers each time so we don't stack listeners or fire a stale endpoint
+	$(dialog).find(".dialog-yes").off("click").on("click", function() {
+		$.ajax({
+			url: endpoint,
+			type: 'POST',
+			contentType: 'application/json',
+			timeout: _ajaxTimeout,
+			error: function(err) {
+				alert(`failure! ${err}`);
+			}
+		});
+		dialog.close();
 	});
+
+	$(dialog).find(".dialog-no").off("click").on("click", function() {
+		dialog.close();
+	});
+
+	dialog.showModal();
 }
 
-function setup() {	
+function setup() {
 	dictQueryString = parseQueryString();
-	
+
 	_printers = filterPrinters(dictQueryString);
+
+	//normalize hosts - strip trailing slashes so host + "/path" never produces a double slash (which 404s on the Moonraker API)
+	_printers.forEach(function(printer) {
+		if(typeof(printer.host) === "string")
+			printer.host = printer.host.replace(/\/+$/, "");
+	});
 
 	if(settings.ajaxTimeout > 0) _ajaxTimeout = Number.parseInt(settings.ajaxTimeout);
 
@@ -962,7 +975,7 @@ var party = {
 	AreWePartying: function() { return (this._timer !== undefined); }
 } 
 
-$().ready(() => {	
+$(() => {
 	setup();
 	updateAll();
 });
